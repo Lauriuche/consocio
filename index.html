@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consórcio Smart Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        .card-shadow { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05); }
+        .input-calc { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .input-calc:focus { transform: translateY(-1px); }
+    </style>
+</head>
+<body class="bg-[#F8FAFC] text-slate-900 min-h-screen">
+
+    <div class="max-w-6xl mx-auto p-4 md:p-8">
+        <!-- Header -->
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+            <div>
+                <h1 class="text-3xl font-800 tracking-tight flex items-center gap-2">
+                    <span class="bg-indigo-600 text-white p-2 rounded-2xl"><i data-lucide="zap" class="w-6 h-6"></i></span>
+                    Consórcio<span class="text-indigo-600">Smart</span><span class="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full font-medium ml-2">PRO</span>
+                </h1>
+                <p class="text-slate-400 text-sm font-medium">Simulador de alta precisão</p>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="exportPDF()" class="text-xs font-bold bg-white border border-slate-200 px-5 py-2.5 rounded-2xl hover:bg-slate-50 transition-all flex items-center gap-2">
+                    <i data-lucide="download" class="w-4 h-4"></i> EXPORTAR PDF
+                </button>
+                <button onclick="copySummary()" class="text-xs font-bold bg-indigo-600 text-white px-5 py-2.5 rounded-2xl hover:bg-indigo-700 transition-all flex items-center gap-2">
+                    <i data-lucide="copy" class="w-4 h-4"></i> COPIAR RESUMO
+                </button>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- CONFIGURAÇÕES -->
+            <aside class="lg:col-span-4 space-y-6">
+                <!-- Configuração Inicial -->
+                <div class="bg-white p-6 rounded-[2rem] card-shadow border border-slate-100">
+                    <h2 class="text-[10px] font-800 text-slate-400 uppercase tracking-widest mb-6">Configuração Inicial</h2>
+                    <div class="space-y-5">
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-500 mb-1.5 ml-1">Valor do Crédito</label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 font-bold">R$</span>
+                                <input type="number" id="valorCredito" value="100000" class="input-calc w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 font-bold text-lg">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-500 mb-1.5 ml-1">Prazo (Meses)</label>
+                                <input type="number" id="prazo" value="60" class="input-calc w-full p-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 font-bold">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-500 mb-1.5 ml-1">Taxa Admin (%)</label>
+                                <input type="number" id="taxaAdm" value="17" class="input-calc w-full p-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 font-bold">
+                            </div>
+                        </div>
+
+                        <div class="pt-2 flex items-center justify-between px-1">
+                            <label class="text-[11px] font-bold text-slate-500">Plano Conforto (-25%)</label>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="planoConfortoCheck" class="sr-only peer input-calc" checked>
+                                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Estratégia de Lance -->
+                <div class="bg-white p-6 rounded-[2rem] card-shadow border border-slate-100">
+                    <h2 class="text-[10px] font-800 text-slate-400 uppercase tracking-widest mb-6">Estratégia de Lance</h2>
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-500 mb-1.5 ml-1">Mês do Lance</label>
+                                <input type="number" id="mesLance" value="12" class="input-calc w-full p-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 font-bold text-center">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-500 mb-1.5 ml-1">Lance Próprio (R$)</label>
+                                <input type="number" id="lanceProprio" value="10000" class="input-calc w-full p-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 font-bold">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-500 mb-1.5 ml-1">Lance Embutido (%)</label>
+                            <select id="lanceEmbutidoPct" class="input-calc w-full p-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 font-bold">
+                                <option value="0">Sem embutido</option>
+                                <option value="10">10%</option>
+                                <option value="20">20%</option>
+                                <option value="30" selected>30% (Máximo usual)</option>
+                            </select>
+                        </div>
+
+                        <div class="flex p-1.5 bg-slate-100 rounded-2xl">
+                            <button id="btnReduzirParcela" onclick="setAbatimento('parcela')" class="flex-1 py-3 rounded-xl text-xs font-bold transition-all bg-white text-indigo-600 shadow-sm">REDUZIR PARCELA</button>
+                            <button id="btnReduzirPrazo" onclick="setAbatimento('prazo')" class="flex-1 py-3 rounded-xl text-xs font-bold transition-all text-slate-400 hover:bg-white/50">REDUZIR PRAZO</button>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- DASHBOARD -->
+            <main class="lg:col-span-8 space-y-6">
+                <!-- Cards Principais -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-indigo-600 p-8 rounded-[2.5rem] text-white shadow-xl shadow-indigo-100 relative overflow-hidden">
+                        <p class="text-indigo-200 text-xs font-bold uppercase tracking-widest">Parcela Atual</p>
+                        <h3 class="text-5xl font-800 mt-2 mb-6" id="resParcela">R$ 0,00</h3>
+                        <div class="pt-6 border-t border-indigo-400/30">
+                            <p class="text-indigo-200 text-xs font-bold">Após Lance (Mês <span class="txtMesLance">12</span>)</p>
+                            <p class="text-3xl font-bold mt-1" id="resParcelaPos">R$ 0,00</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-emerald-500 p-8 rounded-[2.5rem] text-white shadow-xl shadow-emerald-100">
+                        <p class="text-emerald-100 text-xs font-bold uppercase tracking-widest">Economia Estimada vs Banco</p>
+                        <h3 class="text-5xl font-800 mt-3" id="resEconomia">R$ 0,00</h3>
+                        <div class="mt-6">
+                            <div class="flex justify-between text-xs mb-2">
+                                <span>Lance sobre saldo devedor</span>
+                                <strong id="resLancePercent">0%</strong>
+                            </div>
+                            <div class="h-2 bg-white/20 rounded-full overflow-hidden">
+                                <div id="lanceBarra" class="h-full bg-white transition-all duration-700" style="width: 0%"></div>
+                            </div>
+                            <p class="text-center mt-2" id="lanceStatus">Moderado</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resumo Rápido -->
+                <div class="bg-white p-8 rounded-[2.5rem] card-shadow border border-slate-100">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+                        <div>
+                            <p class="text-slate-400 text-xs font-bold uppercase">Crédito Líquido</p>
+                            <p class="text-xl font-bold text-slate-700 mt-1" id="resCreditoLiquido">R$ 0,00</p>
+                        </div>
+                        <div>
+                            <p class="text-slate-400 text-xs font-bold uppercase">Total do Lance</p>
+                            <p class="text-xl font-bold text-indigo-600 mt-1" id="resValorLance">R$ 0,00</p>
+                        </div>
+                        <div>
+                            <p class="text-slate-400 text-xs font-bold uppercase">Taxa Efetiva</p>
+                            <p class="text-xl font-bold text-slate-700 mt-1" id="resTaxaEfetiva">0%</p>
+                        </div>
+                        <div>
+                            <p class="text-slate-400 text-xs font-bold uppercase">Custo Total</p>
+                            <p class="text-xl font-bold text-slate-700 mt-1" id="resCustoTotal">R$ 0,00</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Evolução da Dívida -->
+                <div class="bg-white p-8 rounded-[2.5rem] card-shadow border border-slate-100">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-sm font-bold text-slate-500">Evolução da Dívida</h3>
+                        <span id="labelPrazo" class="bg-indigo-50 text-indigo-600 px-4 py-1 rounded-full text-xs font-bold">60 meses</span>
+                    </div>
+                    <canvas id="graficoDivida" height="90"></canvas>
+                    
+                    <div id="rowNovoPrazo" class="hidden mt-6 pt-6 border-t border-slate-100 flex justify-between items-center text-orange-600">
+                        <p class="font-bold">Novo Prazo de Quitação</p>
+                        <p class="text-2xl font-black" id="resNovoPrazo">0 meses</p>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        let tipoAbatimento = 'parcela';
+        let chartInstance = null;
+
+        const fCur = (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+        function debounce(fn, delay = 250) {
+            let timeout;
+            return (...args) => {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => fn(...args), delay);
+            };
+        }
+
+        function setAbatimento(t) {
+            tipoAbatimento = t;
+            document.getElementById('btnReduzirParcela').classList.toggle('bg-white', t === 'parcela');
+            document.getElementById('btnReduzirParcela').classList.toggle('text-indigo-600', t === 'parcela');
+            document.getElementById('btnReduzirPrazo').classList.toggle('bg-white', t === 'prazo');
+            document.getElementById('btnReduzirPrazo').classList.toggle('text-indigo-600', t === 'prazo');
+            calculate();
+        }
+
+        function calculate() {
+            // ==================== INPUTS ====================
+            const valorCredito = parseFloat(document.getElementById('valorCredito').value) || 0;
+            let prazo = parseInt(document.getElementById('prazo').value) || 60;
+            const taxaAdm = parseFloat(document.getElementById('taxaAdm').value) || 17;
+            let mesLance = parseInt(document.getElementById('mesLance').value) || 12;
+            const lanceProprio = parseFloat(document.getElementById('lanceProprio').value) || 0;
+            const lanceEmbutidoPct = parseFloat(document.getElementById('lanceEmbutidoPct').value) || 0;
+            const planoConforto = document.getElementById('planoConfortoCheck').checked;
+
+            // Validações
+            mesLance = Math.min(Math.max(1, mesLance), prazo);
+            document.getElementById('mesLance').value = mesLance;
+
+            // ==================== CÁLCULOS ====================
+            const valorEntrada = valorCredito * 0.02;
+            const fundoReserva = valorCredito * 0.02;
+            const valorTotalConsorcio = valorCredito * (1 + taxaAdm / 100);
+
+            const parcelaBase = (valorTotalConsorcio - valorEntrada) / (prazo - 1);
+            const parcelaInicial = planoConforto ? parcelaBase * 0.75 : parcelaBase;
+
+            const valorLanceEmbutido = (valorCredito * lanceEmbutidoPct) / 100;
+            const valorLanceTotal = lanceProprio + valorLanceEmbutido;
+
+            const parcelasPagas = mesLance - 1;
+            let saldoAntesLance = valorTotalConsorcio - valorEntrada - (parcelasPagas * parcelaInicial);
+            saldoAntesLance = Math.max(0, saldoAntesLance);
+
+            const saldoAposLance = Math.max(0, saldoAntesLance - valorLanceTotal);
+            const mesesRestantes = prazo - mesLance;
+
+            let parcelaPosLance = parcelaInicial;
+            let novoPrazo = prazo;
+
+            if (tipoAbatimento === 'parcela' && mesesRestantes > 0) {
+                parcelaPosLance = saldoAposLance / mesesRestantes;
+            } else if (tipoAbatimento === 'prazo') {
+                const parcelaFixa = planoConforto ? parcelaBase * 0.75 : parcelaBase;
+                novoPrazo = mesLance + Math.ceil(saldoAposLance / parcelaFixa);
+                parcelaPosLance = parcelaFixa;
+            }
+
+            // Economia vs Banco
+            const taxaMensalBanco = Math.pow(1.11, 1/12) - 1;
+            let custoBanco = 0;
+            let saldoBanco = valorCredito - valorLanceEmbutido;
+            const amortMensal = saldoBanco / prazo;
+
+            for (let i = 0; i < prazo; i++) {
+                const juros = saldoBanco * taxaMensalBanco;
+                custoBanco += amortMensal + juros;
+                saldoBanco = Math.max(0, saldoBanco - amortMensal);
+            }
+
+            const custoConsorcio = valorTotalConsorcio + valorEntrada - valorLanceTotal + lanceProprio;
+            const economia = Math.max(0, custoBanco - custoConsorcio);
+
+            const valorLiquido = valorCredito - valorLanceEmbutido;
+            const custoEfetivo = custoConsorcio - valorCredito;
+            const taxaEfetiva = valorLiquido > 0 ? (custoEfetivo / valorLiquido) * 100 : 0;
+
+            // ==================== ATUALIZAÇÃO UI ====================
+            document.getElementById('resParcela').innerText = fCur(parcelaInicial);
+            document.getElementById('resParcelaPos').innerText = fCur(parcelaPosLance);
+            document.getElementById('resCreditoLiquido').innerText = fCur(valorLiquido);
+            document.getElementById('resValorLance').innerText = fCur(valorLanceTotal);
+            document.getElementById('resEconomia').innerText = fCur(economia);
+            document.getElementById('resCustoTotal').innerText = fCur(custoConsorcio);
+            document.getElementById('resTaxaEfetiva').innerText = taxaEfetiva.toFixed(2) + "%";
+
+            const percLance = saldoAntesLance > 0 ? (valorLanceTotal / saldoAntesLance) * 100 : 0;
+            document.getElementById('resLancePercent').innerText = percLance.toFixed(1) + "%";
+            document.getElementById('lanceBarra').style.width = Math.min(100, percLance) + "%";
+
+            // Status do Lance
+            const statusEl = document.getElementById('lanceStatus');
+            if (percLance >= 45) {
+                statusEl.innerText = "Muito Agressivo";
+                statusEl.className = "text-xs font-bold text-red-400";
+            } else if (percLance >= 30) {
+                statusEl.innerText = "Agressivo";
+                statusEl.className = "text-xs font-bold text-orange-400";
+            } else {
+                statusEl.innerText = "Moderado";
+                statusEl.className = "text-xs font-bold text-emerald-300";
+            }
+
+            // Novo Prazo
+            const rowPrazo = document.getElementById('rowNovoPrazo');
+            if (tipoAbatimento === 'prazo') {
+                rowPrazo.classList.remove('hidden');
+                document.getElementById('resNovoPrazo').innerText = novoPrazo + " meses";
+            } else {
+                rowPrazo.classList.add('hidden');
+            }
+
+            document.querySelectorAll('.txtMesLance').forEach(el => el.textContent = mesLance);
+            document.getElementById('labelPrazo').innerText = prazo + " meses";
+
+            updateChart(mesLance, prazo, saldoAntesLance, saldoAposLance);
+        }
+
+        function updateChart(mesLance, prazo, saldoAntes, saldoApos) {
+            const ctx = document.getElementById('graficoDivida');
+            if (chartInstance) chartInstance.destroy();
+
+            const labels = Array.from({length: 12}, (_, i) => `M${i+1}`);
+            const dataAntes = Array(12).fill(saldoAntes);
+            const dataDepois = Array(12).fill(saldoApos);
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Saldo Antes Lance',
+                            data: dataAntes,
+                            borderColor: '#6366f1',
+                            backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                            tension: 0.3,
+                            borderWidth: 3
+                        },
+                        {
+                            label: 'Saldo Após Lance',
+                            data: dataDepois,
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.3,
+                            borderWidth: 3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: true, position: 'top' } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        function copySummary() {
+            const texto = `📊 CONSÓRCIO SMART PRO\n\n` +
+                `Crédito: ${document.getElementById('resCreditoLiquido').innerText}\n` +
+                `Parcela Inicial: ${document.getElementById('resParcela').innerText}\n` +
+                `Parcela Pós-Lance: ${document.getElementById('resParcelaPos').innerText}\n` +
+                `Economia Estimada: ${document.getElementById('resEconomia').innerText}\n` +
+                `Lance Total: ${document.getElementById('resValorLance').innerText}`;
+
+            navigator.clipboard.writeText(texto).then(() => alert("✅ Resumo copiado para a área de transferência!"));
+        }
+
+        function exportPDF() {
+            alert("🚀 Funcionalidade de Exportação PDF em desenvolvimento.\n\nNa versão final usaremos jsPDF + html2canvas.");
+            // Aqui você pode implementar jsPDF futuramente
+        }
+
+        // Inicialização
+        document.querySelectorAll('.input-calc').forEach(el => {
+            el.addEventListener('input', debounce(calculate));
+        });
+
+        // Primeira execução
+        window.onload = () => {
+            calculate();
+        };
+    </script>
+</body>
+</html>
