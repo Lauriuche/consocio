@@ -68,7 +68,7 @@
                         </div>
 
                         <div class="pt-2 flex items-center justify-between px-1">
-                            <label class="text-[11px] font-bold text-slate-500">Plano Conforto (-25%)</label>
+                            <label class="text-[11px] font-bold text-slate-500">Plano Conforto (-50%)</label>
                             <label class="relative inline-flex items-center cursor-pointer">
                                 <input type="checkbox" id="planoConfortoCheck" class="sr-only peer input-calc" checked>
                                 <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
@@ -222,7 +222,7 @@
             const valorTotalConsorcio = valorCredito * (1 + taxaAdm / 100);
 
             const parcelaBase = (valorTotalConsorcio - valorEntrada) / (prazo - 1);
-            const parcelaInicial = planoConforto ? parcelaBase * 0.75 : parcelaBase;
+            const parcelaInicial = planoConforto ? parcelaBase * 0.50 : parcelaBase;
 
             const valorLanceEmbutido = (valorCredito * lanceEmbutidoPct) / 100;
             const valorLanceTotal = lanceProprio + valorLanceEmbutido;
