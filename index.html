@@ -11,8 +11,7 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        input[type=number]::-webkit-inner-spin-button, 
-        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        
         .card-shadow { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05); }
         .input-calc { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
         .input-calc:focus { transform: translateY(-1px); }
@@ -21,7 +20,6 @@
 <body class="bg-[#F8FAFC] text-slate-900 min-h-screen">
 
     <div class="max-w-6xl mx-auto p-4 md:p-8">
-        <!-- Header -->
         <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
             <div>
                 <h1 class="text-3xl font-800 tracking-tight flex items-center gap-2">
@@ -44,67 +42,70 @@
             
             <!-- CONFIGURAÇÕES -->
             <aside class="lg:col-span-4 space-y-6">
-                <!-- Configuração Inicial -->
                 <div class="bg-white p-6 rounded-[2rem] card-shadow border border-slate-100">
                     <h2 class="text-[10px] font-800 text-slate-400 uppercase tracking-widest mb-6">Configuração Inicial</h2>
                     <div class="space-y-5">
                         <div>
                             <label class="block text-[11px] font-bold text-slate-500 mb-1.5 ml-1">Valor do Crédito</label>
                             <div class="relative">
-                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 font-bold">R$</span>
-                                <input type="number" id="valorCredito" value="100000" class="input-calc w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 font-bold text-lg">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">R$</span>
+                                <input type="text" id="valorCredito" placeholder="100.000,00" class="currency-input input-calc w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 font-bold text-lg">
                             </div>
                         </div>
 
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-[11px] font-bold text-slate-500 mb-1.5 ml-1">Prazo (Meses)</label>
-                                <input type="number" id="prazo" value="60" class="input-calc w-full p-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 font-bold">
+                                <input type="number" id="prazo" placeholder="60" class="input-calc w-full p-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 font-bold">
                             </div>
                             <div>
                                 <label class="block text-[11px] font-bold text-slate-500 mb-1.5 ml-1">Taxa Admin (%)</label>
-                                <input type="number" id="taxaAdm" value="17" class="input-calc w-full p-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 font-bold">
+                                <input type="number" id="taxaAdm" placeholder="17" class="input-calc w-full p-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 font-bold">
                             </div>
                         </div>
 
                         <div class="pt-2 flex items-center justify-between px-1">
                             <label class="text-[11px] font-bold text-slate-500">Plano Conforto (-50%)</label>
                             <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" id="planoConfortoCheck" class="sr-only peer input-calc" checked>
+                                <input type="checkbox" id="planoConfortoCheck" class="sr-only peer input-calc">
                                 <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
                             </label>
                         </div>
                     </div>
                 </div>
 
-                <!-- Estratégia de Lance -->
                 <div class="bg-white p-6 rounded-[2rem] card-shadow border border-slate-100">
                     <h2 class="text-[10px] font-800 text-slate-400 uppercase tracking-widest mb-6">Estratégia de Lance</h2>
                     <div class="space-y-4">
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-[11px] font-bold text-slate-500 mb-1.5 ml-1">Mês do Lance</label>
-                                <input type="number" id="mesLance" value="12" class="input-calc w-full p-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 font-bold text-center">
+                                <input type="number" id="mesLance" placeholder="12" class="input-calc w-full p-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 font-bold text-center">
                             </div>
                             <div>
-                                <label class="block text-[11px] font-bold text-slate-500 mb-1.5 ml-1">Lance Próprio (R$)</label>
-                                <input type="number" id="lanceProprio" value="10000" class="input-calc w-full p-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 font-bold">
+                                <label class="block text-[11px] font-bold text-slate-500 mb-1.5 ml-1">Lance Próprio</label>
+                                <div class="relative">
+                                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">R$</span>
+                                    <input type="text" id="lanceProprio" placeholder="10.000,00" class="currency-input input-calc w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 font-bold">
+                                </div>
                             </div>
                         </div>
 
                         <div>
                             <label class="block text-[11px] font-bold text-slate-500 mb-1.5 ml-1">Lance Embutido (%)</label>
                             <select id="lanceEmbutidoPct" class="input-calc w-full p-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 font-bold">
-                                <option value="0">Sem embutido</option>
+                                <option value="0" selected>Sem embutido</option>
                                 <option value="10">10%</option>
                                 <option value="20">20%</option>
-                                <option value="30" selected>30% (Máximo usual)</option>
+                                <option value="30">30% (Máximo usual)</option>
                             </select>
                         </div>
 
                         <div class="flex p-1.5 bg-slate-100 rounded-2xl">
-                            <button id="btnReduzirParcela" onclick="setAbatimento('parcela')" class="flex-1 py-3 rounded-xl text-xs font-bold transition-all bg-white text-indigo-600 shadow-sm">REDUZIR PARCELA</button>
-                            <button id="btnReduzirPrazo" onclick="setAbatimento('prazo')" class="flex-1 py-3 rounded-xl text-xs font-bold transition-all text-slate-400 hover:bg-white/50">REDUZIR PRAZO</button>
+                            <button id="btnReduzirParcela" onclick="setAbatimento('parcela')" 
+                                    class="flex-1 py-3 rounded-xl text-xs font-bold transition-all bg-white text-indigo-600 shadow-sm">REDUZIR PARCELA</button>
+                            <button id="btnReduzirPrazo" onclick="setAbatimento('prazo')" 
+                                    class="flex-1 py-3 rounded-xl text-xs font-bold transition-all text-slate-400 hover:bg-white/50">REDUZIR PRAZO</button>
                         </div>
                     </div>
                 </div>
@@ -112,9 +113,8 @@
 
             <!-- DASHBOARD -->
             <main class="lg:col-span-8 space-y-6">
-                <!-- Cards Principais -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-indigo-600 p-8 rounded-[2.5rem] text-white shadow-xl shadow-indigo-100 relative overflow-hidden">
+                    <div class="bg-indigo-600 p-8 rounded-[2.5rem] text-white shadow-xl shadow-indigo-100">
                         <p class="text-indigo-200 text-xs font-bold uppercase tracking-widest">Parcela Atual</p>
                         <h3 class="text-5xl font-800 mt-2 mb-6" id="resParcela">R$ 0,00</h3>
                         <div class="pt-6 border-t border-indigo-400/30">
@@ -124,53 +124,39 @@
                     </div>
 
                     <div class="bg-emerald-500 p-8 rounded-[2.5rem] text-white shadow-xl shadow-emerald-100">
-                        <p class="text-emerald-100 text-xs font-bold uppercase tracking-widest">Economia Estimada vs Banco</p>
+                        <p class="text-emerald-100 text-xs font-bold uppercase tracking-widest">Economia Estimada</p>
                         <h3 class="text-5xl font-800 mt-3" id="resEconomia">R$ 0,00</h3>
                         <div class="mt-6">
                             <div class="flex justify-between text-xs mb-2">
-                                <span>Lance sobre saldo devedor</span>
+                                <span>Lance sobre saldo</span>
                                 <strong id="resLancePercent">0%</strong>
                             </div>
                             <div class="h-2 bg-white/20 rounded-full overflow-hidden">
                                 <div id="lanceBarra" class="h-full bg-white transition-all duration-700" style="width: 0%"></div>
                             </div>
-                            <p class="text-center mt-2" id="lanceStatus">Moderado</p>
+                            <p class="text-center mt-2 text-sm" id="lanceStatus">Moderado</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Resumo Rápido -->
                 <div class="bg-white p-8 rounded-[2.5rem] card-shadow border border-slate-100">
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-                        <div>
-                            <p class="text-slate-400 text-xs font-bold uppercase">Crédito Líquido</p>
-                            <p class="text-xl font-bold text-slate-700 mt-1" id="resCreditoLiquido">R$ 0,00</p>
-                        </div>
-                        <div>
-                            <p class="text-slate-400 text-xs font-bold uppercase">Total do Lance</p>
-                            <p class="text-xl font-bold text-indigo-600 mt-1" id="resValorLance">R$ 0,00</p>
-                        </div>
-                        <div>
-                            <p class="text-slate-400 text-xs font-bold uppercase">Taxa Efetiva</p>
-                            <p class="text-xl font-bold text-slate-700 mt-1" id="resTaxaEfetiva">0%</p>
-                        </div>
-                        <div>
-                            <p class="text-slate-400 text-xs font-bold uppercase">Custo Total</p>
-                            <p class="text-xl font-bold text-slate-700 mt-1" id="resCustoTotal">R$ 0,00</p>
-                        </div>
+                        <div><p class="text-slate-400 text-xs font-bold uppercase">Crédito Líquido</p><p class="text-xl font-bold text-slate-700 mt-1" id="resCreditoLiquido">R$ 0,00</p></div>
+                        <div><p class="text-slate-400 text-xs font-bold uppercase">Total do Lance</p><p class="text-xl font-bold text-indigo-600 mt-1" id="resValorLance">R$ 0,00</p></div>
+                        <div><p class="text-slate-400 text-xs font-bold uppercase">Taxa Efetiva</p><p class="text-xl font-bold text-slate-700 mt-1" id="resTaxaEfetiva">0,00%</p></div>
+                        <div><p class="text-slate-400 text-xs font-bold uppercase">Custo Total</p><p class="text-xl font-bold text-slate-700 mt-1" id="resCustoTotal">R$ 0,00</p></div>
                     </div>
                 </div>
 
-                <!-- Evolução da Dívida -->
-                <div class="bg-white p-8 rounded-[2.5rem] card-shadow border border-slate-100">
-                    <div class="flex justify-between items-center mb-6">
+                <div class="bg-white p-6 rounded-[2rem] card-shadow border border-slate-100">
+                    <div class="flex justify-between items-center mb-4">
                         <h3 class="text-sm font-bold text-slate-500">Evolução da Dívida</h3>
                         <span id="labelPrazo" class="bg-indigo-50 text-indigo-600 px-4 py-1 rounded-full text-xs font-bold">60 meses</span>
                     </div>
-                    <canvas id="graficoDivida" height="90"></canvas>
+                    <div class="h-56"><canvas id="graficoDivida"></canvas></div>
                     
-                    <div id="rowNovoPrazo" class="hidden mt-6 pt-6 border-t border-slate-100 flex justify-between items-center text-orange-600">
-                        <p class="font-bold">Novo Prazo de Quitação</p>
+                    <div id="rowNovoPrazo" class="hidden mt-4 pt-4 border-t border-slate-100 flex justify-between items-center text-emerald-600">
+                        <p class="font-medium">Novo Prazo de Quitação</p>
                         <p class="text-2xl font-black" id="resNovoPrazo">0 meses</p>
                     </div>
                 </div>
@@ -183,46 +169,61 @@
         let tipoAbatimento = 'parcela';
         let chartInstance = null;
 
+        function formatCurrency(value) {
+            if (isNaN(value) || value === 0) return "";
+            return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function parseCurrency(str) {
+            if (!str) return 0;
+            return parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0;
+        }
+
+        function applyCurrencyMask(input) {
+            input.addEventListener('input', function() {
+                let value = this.value.replace(/\D/g, '');
+                if (value === '') { this.value = ''; return; }
+                const numeric = parseFloat(value) / 100;
+                this.value = formatCurrency(numeric);
+            });
+        }
+
         const fCur = (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-        function debounce(fn, delay = 250) {
+        function debounce(fn, delay = 300) {
             let timeout;
-            return (...args) => {
-                clearTimeout(timeout);
-                timeout = setTimeout(() => fn(...args), delay);
-            };
+            return (...args) => { clearTimeout(timeout); timeout = setTimeout(() => fn(...args), delay); };
         }
 
         function setAbatimento(t) {
             tipoAbatimento = t;
-            document.getElementById('btnReduzirParcela').classList.toggle('bg-white', t === 'parcela');
-            document.getElementById('btnReduzirParcela').classList.toggle('text-indigo-600', t === 'parcela');
-            document.getElementById('btnReduzirPrazo').classList.toggle('bg-white', t === 'prazo');
-            document.getElementById('btnReduzirPrazo').classList.toggle('text-indigo-600', t === 'prazo');
+            const btnParcela = document.getElementById('btnReduzirParcela');
+            const btnPrazo = document.getElementById('btnReduzirPrazo');
+            
+            btnParcela.classList.toggle('bg-white', t === 'parcela');
+            btnParcela.classList.toggle('text-indigo-600', t === 'parcela');
+            btnPrazo.classList.toggle('bg-white', t === 'prazo');
+            btnPrazo.classList.toggle('text-indigo-600', t === 'prazo');
+            
             calculate();
         }
 
         function calculate() {
-            // ==================== INPUTS ====================
-            const valorCredito = parseFloat(document.getElementById('valorCredito').value) || 0;
+            const valorCredito = parseCurrency(document.getElementById('valorCredito').value);
             let prazo = parseInt(document.getElementById('prazo').value) || 60;
             const taxaAdm = parseFloat(document.getElementById('taxaAdm').value) || 17;
             let mesLance = parseInt(document.getElementById('mesLance').value) || 12;
-            const lanceProprio = parseFloat(document.getElementById('lanceProprio').value) || 0;
+            const lanceProprio = parseCurrency(document.getElementById('lanceProprio').value);
             const lanceEmbutidoPct = parseFloat(document.getElementById('lanceEmbutidoPct').value) || 0;
             const planoConforto = document.getElementById('planoConfortoCheck').checked;
 
-            // Validações
             mesLance = Math.min(Math.max(1, mesLance), prazo);
-            document.getElementById('mesLance').value = mesLance;
 
-            // ==================== CÁLCULOS ====================
+            // Cálculos
             const valorEntrada = valorCredito * 0.02;
-            const fundoReserva = valorCredito * 0.02;
             const valorTotalConsorcio = valorCredito * (1 + taxaAdm / 100);
-
             const parcelaBase = (valorTotalConsorcio - valorEntrada) / (prazo - 1);
-            const parcelaInicial = planoConforto ? parcelaBase * 0.50 : parcelaBase;
+            const parcelaInicial = planoConforto ? parcelaBase * 0.5 : parcelaBase;
 
             const valorLanceEmbutido = (valorCredito * lanceEmbutidoPct) / 100;
             const valorLanceTotal = lanceProprio + valorLanceEmbutido;
@@ -232,17 +233,22 @@
             saldoAntesLance = Math.max(0, saldoAntesLance);
 
             const saldoAposLance = Math.max(0, saldoAntesLance - valorLanceTotal);
-            const mesesRestantes = prazo - mesLance;
 
             let parcelaPosLance = parcelaInicial;
             let novoPrazo = prazo;
 
-            if (tipoAbatimento === 'parcela' && mesesRestantes > 0) {
-                parcelaPosLance = saldoAposLance / mesesRestantes;
-            } else if (tipoAbatimento === 'prazo') {
-                const parcelaFixa = planoConforto ? parcelaBase * 0.75 : parcelaBase;
-                novoPrazo = mesLance + Math.ceil(saldoAposLance / parcelaFixa);
-                parcelaPosLance = parcelaFixa;
+            if (tipoAbatimento === 'parcela') {
+                // Reduzir Parcela → mantém prazo, reduz valor da parcela
+                const mesesRestantes = prazo - mesLance;
+                parcelaPosLance = mesesRestantes > 0 ? saldoAposLance / mesesRestantes : 0;
+            } else {
+                // Reduzir Prazo → mantém parcela aproximada, reduz o prazo
+                const parcelaFixa = planoConforto ? parcelaBase * 0.5 : parcelaBase;
+                if (parcelaFixa > 0) {
+                    const mesesRestantesNovos = Math.ceil(saldoAposLance / parcelaFixa);
+                    novoPrazo = mesLance + mesesRestantesNovos;
+                    parcelaPosLance = parcelaFixa;
+                }
             }
 
             // Economia vs Banco
@@ -252,19 +258,16 @@
             const amortMensal = saldoBanco / prazo;
 
             for (let i = 0; i < prazo; i++) {
-                const juros = saldoBanco * taxaMensalBanco;
-                custoBanco += amortMensal + juros;
+                custoBanco += amortMensal + (saldoBanco * taxaMensalBanco);
                 saldoBanco = Math.max(0, saldoBanco - amortMensal);
             }
 
             const custoConsorcio = valorTotalConsorcio + valorEntrada - valorLanceTotal + lanceProprio;
             const economia = Math.max(0, custoBanco - custoConsorcio);
-
             const valorLiquido = valorCredito - valorLanceEmbutido;
-            const custoEfetivo = custoConsorcio - valorCredito;
-            const taxaEfetiva = valorLiquido > 0 ? (custoEfetivo / valorLiquido) * 100 : 0;
+            const taxaEfetiva = valorLiquido > 0 ? ((custoConsorcio - valorCredito) / valorLiquido) * 100 : 0;
 
-            // ==================== ATUALIZAÇÃO UI ====================
+            // UI
             document.getElementById('resParcela').innerText = fCur(parcelaInicial);
             document.getElementById('resParcelaPos').innerText = fCur(parcelaPosLance);
             document.getElementById('resCreditoLiquido').innerText = fCur(valorLiquido);
@@ -277,18 +280,8 @@
             document.getElementById('resLancePercent').innerText = percLance.toFixed(1) + "%";
             document.getElementById('lanceBarra').style.width = Math.min(100, percLance) + "%";
 
-            // Status do Lance
             const statusEl = document.getElementById('lanceStatus');
-            if (percLance >= 45) {
-                statusEl.innerText = "Muito Agressivo";
-                statusEl.className = "text-xs font-bold text-red-400";
-            } else if (percLance >= 30) {
-                statusEl.innerText = "Agressivo";
-                statusEl.className = "text-xs font-bold text-orange-400";
-            } else {
-                statusEl.innerText = "Moderado";
-                statusEl.className = "text-xs font-bold text-emerald-300";
-            }
+            statusEl.textContent = percLance >= 45 ? "Muito Agressivo" : percLance >= 30 ? "Agressivo" : "Moderado";
 
             // Novo Prazo
             const rowPrazo = document.getElementById('rowNovoPrazo');
@@ -309,65 +302,36 @@
             const ctx = document.getElementById('graficoDivida');
             if (chartInstance) chartInstance.destroy();
 
-            const labels = Array.from({length: 12}, (_, i) => `M${i+1}`);
-            const dataAntes = Array(12).fill(saldoAntes);
-            const dataDepois = Array(12).fill(saldoApos);
-
             chartInstance = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: labels,
+                    labels: Array.from({length: 12}, (_, i) => `M${i+1}`),
                     datasets: [
-                        {
-                            label: 'Saldo Antes Lance',
-                            data: dataAntes,
-                            borderColor: '#6366f1',
-                            backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                            tension: 0.3,
-                            borderWidth: 3
-                        },
-                        {
-                            label: 'Saldo Após Lance',
-                            data: dataDepois,
-                            borderColor: '#10b981',
-                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                            tension: 0.3,
-                            borderWidth: 3
-                        }
+                        { label: 'Antes do Lance', data: Array(12).fill(saldoAntes), borderColor: '#6366f1', tension: 0.3, borderWidth: 3 },
+                        { label: 'Após o Lance', data: Array(12).fill(saldoApos), borderColor: '#10b981', tension: 0.3, borderWidth: 3 }
                     ]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: true, position: 'top' } },
-                    scales: { y: { beginAtZero: true } }
-                }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { y: { beginAtZero: true } }}
             });
         }
 
         function copySummary() {
-            const texto = `📊 CONSÓRCIO SMART PRO\n\n` +
-                `Crédito: ${document.getElementById('resCreditoLiquido').innerText}\n` +
-                `Parcela Inicial: ${document.getElementById('resParcela').innerText}\n` +
-                `Parcela Pós-Lance: ${document.getElementById('resParcelaPos').innerText}\n` +
-                `Economia Estimada: ${document.getElementById('resEconomia').innerText}\n` +
-                `Lance Total: ${document.getElementById('resValorLance').innerText}`;
-
-            navigator.clipboard.writeText(texto).then(() => alert("✅ Resumo copiado para a área de transferência!"));
+            const texto = `📊 CONSÓRCIO SMART PRO\n\nCrédito: ${document.getElementById('resCreditoLiquido').innerText}\nParcela Inicial: ${document.getElementById('resParcela').innerText}\nParcela Pós-Lance: ${document.getElementById('resParcelaPos').innerText}\nEconomia: ${document.getElementById('resEconomia').innerText}`;
+            navigator.clipboard.writeText(texto).then(() => alert("✅ Resumo copiado!"));
         }
 
         function exportPDF() {
-            alert("🚀 Funcionalidade de Exportação PDF em desenvolvimento.\n\nNa versão final usaremos jsPDF + html2canvas.");
-            // Aqui você pode implementar jsPDF futuramente
+            alert("Exportação PDF em breve.");
         }
 
-        // Inicialização
-        document.querySelectorAll('.input-calc').forEach(el => {
-            el.addEventListener('input', debounce(calculate));
-        });
-
-        // Primeira execução
         window.onload = () => {
+            applyCurrencyMask(document.getElementById('valorCredito'));
+            applyCurrencyMask(document.getElementById('lanceProprio'));
+
+            document.querySelectorAll('.input-calc').forEach(el => {
+                el.addEventListener('input', debounce(calculate));
+            });
+
             calculate();
         };
     </script>
