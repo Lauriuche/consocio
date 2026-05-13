@@ -7,10 +7,11 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; }
-
+        
         .app-input {
             background-color: #f8fafc;
             border: 1px solid #e2e8f0;
@@ -28,7 +29,7 @@
         }
     </style>
 </head>
-<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200">
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 min-h-screen">
 
 <div class="max-w-md mx-auto min-h-screen bg-white dark:bg-slate-900 shadow-2xl overflow-hidden">
 
@@ -65,9 +66,9 @@
             <h3 class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-4 flex items-center gap-2">
                 <i class="fas fa-coins"></i> VALORES
             </h3>
-            <div class="grid grid-cols-2 gap-5">
+            <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5 block">Inicial</label>
+                    <label class="text-xs font-medium text-slate-500 dark:text-slate-400">Inicial</label>
                     <div class="relative">
                         <span class="absolute left-4 top-4 text-slate-400">R$</span>
                         <input type="text" id="investmentValue" inputmode="numeric" 
@@ -76,7 +77,7 @@
                     </div>
                 </div>
                 <div>
-                    <label class="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5 block">Mensal</label>
+                    <label class="text-xs font-medium text-slate-500 dark:text-slate-400">Mensal</label>
                     <div class="relative">
                         <span class="absolute left-4 top-4 text-slate-400">R$</span>
                         <input type="text" id="monthlyValue" inputmode="numeric"
@@ -92,26 +93,25 @@
             <h3 class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-4 flex items-center gap-2">
                 <i class="fas fa-percent"></i> TAXAS
             </h3>
-            
-            <div class="bg-emerald-50 dark:bg-emerald-950/50 rounded-3xl p-5 mb-6">
+            <div class="bg-emerald-50 dark:bg-emerald-950/50 rounded-3xl p-5 mb-5">
                 <div class="flex justify-between items-center">
-                    <div class="flex-1">
-                        <label class="text-xs font-medium text-emerald-700 dark:text-emerald-400">CDI Atual (a.a.)</label>
+                    <div>
+                        <label class="text-xs font-medium text-emerald-700 dark:text-emerald-400">CDI Atual</label>
                         <input type="text" id="cdiRate" readonly class="bg-transparent text-3xl font-bold w-full dark:text-white">
                     </div>
-                    <button onclick="fetchCDI()" class="ml-4 w-11 h-11 bg-white dark:bg-slate-700 rounded-2xl shadow hover:scale-110 transition-all">
+                    <button onclick="fetchCDI()" class="w-11 h-11 bg-white dark:bg-slate-700 rounded-2xl shadow hover:scale-110 transition-all">
                         <i class="fas fa-sync-alt text-emerald-600" id="refreshIcon"></i>
                     </button>
                 </div>
             </div>
 
             <div>
-                <label class="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2 block">% do CDI</label>
+                <label class="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">Rentabilidade (% do CDI)</label>
                 <div class="relative">
                     <input type="text" id="cdbPercent" value="100" inputmode="decimal"
                            class="app-input w-full text-center font-bold text-3xl py-6 dark:text-white"
                            oninput="debounceCalculate()">
-                    <span class="absolute right-6 top-1/2 -translate-y-1/2 text-3xl text-slate-400 font-medium">%</span>
+                    <span class="absolute right-6 top-1/2 -translate-y-1/2 text-3xl text-slate-400">%</span>
                 </div>
             </div>
         </div>
@@ -126,7 +126,7 @@
                     <span id="modeLabel" class="text-sm font-medium">Dias Úteis</span>
                     <div class="toggle-switch">
                         <input type="checkbox" id="useBusinessDays" checked onchange="toggleMode()">
-                        <span class="toggle-slider"></span>
+                        <span class="toggle-slider bg-slate-300 dark:bg-slate-600"></span>
                     </div>
                 </label>
             </div>
@@ -159,17 +159,42 @@
         </button>
 
         <!-- Resultado -->
-        <div id="detailsSection" class="hidden bg-white dark:bg-slate-800 rounded-3xl shadow p-6 mt-6">
-            <!-- Resultado aqui (mantido) -->
+        <div id="detailsSection" class="hidden bg-white dark:bg-slate-800 rounded-3xl shadow p-6 mt-4">
+            <h4 class="font-semibold text-lg mb-6">Resultado Detalhado</h4>
+            <div class="h-60 mb-8">
+                <canvas id="resultChart"></canvas>
+            </div>
+
+            <div class="space-y-4">
+                <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">Total Investido</span><span id="detTotalInvested" class="font-semibold">R$ 0,00</span></div>
+                <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">Bruto Final</span><span id="detTotalGross" class="font-semibold">R$ 0,00</span></div>
+                <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">IOF</span><span id="detTotalIOF" class="text-orange-600">- R$ 0,00</span></div>
+                <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">IR</span><span id="detTotalTax" class="text-red-600">- R$ 0,00</span></div>
+                <div class="flex justify-between border-t pt-4 font-bold text-lg">
+                    <span>Líquido Final</span>
+                    <span id="detTotalNet" class="text-emerald-500">R$ 0,00</span>
+                </div>
+            </div>
+
+            <!-- Estimativa de Rendimento -->
+            <div class="mt-8 bg-emerald-50 dark:bg-emerald-950/30 p-5 rounded-3xl">
+                <h5 class="font-semibold text-emerald-700 dark:text-emerald-400 mb-4">Estimativa de Rendimento</h5>
+                <div class="grid grid-cols-2 gap-4 text-center">
+                    <div><div class="text-xs text-slate-500">DIÁRIO</div><div id="yieldDaily" class="font-bold">R$ 0,00</div></div>
+                    <div><div class="text-xs text-slate-500">MENSAL</div><div id="yieldMonthly" class="font-bold">R$ 0,00</div></div>
+                    <div><div class="text-xs text-slate-500">ANUAL</div><div id="yieldYearly" class="font-bold">R$ 0,00</div></div>
+                    <div><div class="text-xs text-slate-500">TOTAL</div><div id="yieldTotal" class="font-bold text-emerald-600">R$ 0,00</div></div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    // Script completo (mesmo da versão anterior)
     let resultChart = null;
     let debounceTimer = null;
 
+    // Supressão do warning do Tailwind
     console.warn = () => {};
 
     function formatCurrency(input) {
@@ -199,7 +224,149 @@
         }
     }
 
-    // ... (inclua aqui o restante do JavaScript completo de calculate(), handleMonthsChange(), toggleDarkMode(), etc.)
+    function calculateDateBreakdown(start, end) {
+        let current = new Date(start);
+        const endDate = new Date(end);
+        let total = 0, business = 0, weekend = 0, holiday = 0;
+        while (current <= endDate) {
+            total++;
+            const d = current.getDay();
+            if (d === 0 || d === 6) weekend++;
+            else if ({'01-01':1,'04-21':1,'05-01':1,'09-07':1,'10-12':1,'11-02':1,'11-15':1,'12-25':1}[current.toISOString().slice(5,10)]) holiday++;
+            else business++;
+            current.setDate(current.getDate() + 1);
+        }
+        return { totalDays: total - 1, businessDays: business, weekends: weekend, holidays: holiday };
+    }
+
+    function handleMonthsChange() {
+        const months = parseInt(document.getElementById('monthsInput').value) || 0;
+        const startStr = document.getElementById('startDate').value;
+        if (months > 0 && startStr) {
+            let end = new Date(startStr);
+            end.setMonth(end.getMonth() + months);
+            document.getElementById('endDate').valueAsDate = end;
+        }
+        debounceCalculate();
+    }
+
+    function handleDateChange() {
+        debounceCalculate();
+    }
+
+    function toggleMode() {
+        const checked = document.getElementById('useBusinessDays').checked;
+        document.getElementById('modeLabel').textContent = checked ? "Dias Úteis" : "Dias Corridos";
+        document.getElementById('daysLabelType').textContent = checked ? "(Úteis)" : "(Corridos)";
+        debounceCalculate();
+    }
+
+    function toggleDarkMode() {
+        document.documentElement.classList.toggle('dark');
+        localStorage.setItem('darkMode', document.documentElement.classList.contains('dark'));
+        updateThemeIcon();
+    }
+
+    function updateThemeIcon() {
+        const icon = document.getElementById('themeIcon');
+        icon.classList.toggle('fa-moon', !document.documentElement.classList.contains('dark'));
+        icon.classList.toggle('fa-sun', document.documentElement.classList.contains('dark'));
+    }
+
+    function debounceCalculate() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(calculate, 400);
+    }
+
+    function calculate() {
+        const principal = parseMoney(document.getElementById('investmentValue').value) || 0;
+        if (principal <= 0) return;
+
+        const monthly = parseMoney(document.getElementById('monthlyValue').value);
+        const cdi = parseFloat(document.getElementById('cdiRate').value) || 14.4;
+        const percent = parseFloat(document.getElementById('cdbPercent').value) || 100;
+        const useBusiness = document.getElementById('useBusinessDays').checked;
+
+        const startStr = document.getElementById('startDate').value;
+        const endStr = document.getElementById('endDate').value;
+
+        if (!startStr || !endStr) return;
+
+        const start = new Date(startStr);
+        const end = new Date(endStr);
+        if (end <= start) return;
+
+        const breakdown = calculateDateBreakdown(start, end);
+        const daysRate = useBusiness ? breakdown.businessDays : breakdown.totalDays;
+        const daysTax = breakdown.totalDays;
+
+        const dailyCDB = (Math.pow(1 + cdi/100, 1/252) - 1) * (percent / 100);
+
+        let gross = principal * Math.pow(1 + dailyCDB, daysRate);
+        let profit = gross - principal;
+
+        let iof = 0;
+        if (daysTax < 30 && daysTax > 0) {
+            const iofTable = [96,93,90,86,83,80,76,73,70,66,63,60,56,53,50,46,43,40,36,33,30,26,23,20,16,13,10,6,3];
+            iof = profit * (iofTable[daysTax-1] / 100);
+        }
+
+        const irRate = daysTax <= 180 ? 22.5 : daysTax <= 360 ? 20 : daysTax <= 720 ? 17.5 : 15;
+        const ir = (profit - iof) * (irRate / 100);
+
+        let totalInvested = principal;
+        let totalGross = gross;
+        let totalIOF = iof;
+        let totalIR = ir;
+
+        if (monthly > 0) {
+            let current = new Date(start); current.setMonth(current.getMonth() + 1);
+            while (current < end) {
+                const mBD = calculateDateBreakdown(current, end);
+                const mDays = useBusiness ? mBD.businessDays : mBD.totalDays;
+                const mGross = monthly * Math.pow(1 + dailyCDB, mDays);
+                totalInvested += monthly;
+                totalGross += mGross;
+                totalIR += (mGross - monthly) * (irRate / 100);
+                current.setMonth(current.getMonth() + 1);
+            }
+        }
+
+        const totalNet = totalGross - totalIOF - totalIR;
+        const netProfit = totalNet - totalInvested;
+
+        // Atualiza tela
+        document.getElementById('headerResult').textContent = formatBRL(totalNet);
+        document.getElementById('headerProfit').textContent = `+ ${formatBRL(netProfit)} de lucro`;
+
+        document.getElementById('detTotalInvested').textContent = formatBRL(totalInvested);
+        document.getElementById('detTotalGross').textContent = formatBRL(totalGross);
+        document.getElementById('detTotalIOF').textContent = `- ${formatBRL(totalIOF)}`;
+        document.getElementById('detTotalTax').textContent = `- ${formatBRL(totalIR)}`;
+        document.getElementById('detTotalNet').textContent = formatBRL(totalNet);
+
+        // Estimativa
+        const totalDays = breakdown.totalDays || 1;
+        document.getElementById('yieldDaily').textContent = formatBRL(netProfit / totalDays);
+        document.getElementById('yieldMonthly').textContent = formatBRL(netProfit / (totalDays / 30));
+        document.getElementById('yieldYearly').textContent = formatBRL(netProfit * (365 / totalDays));
+        document.getElementById('yieldTotal').textContent = formatBRL(netProfit);
+
+        document.getElementById('detailsSection').classList.remove('hidden');
+
+        // Gráfico
+        if (resultChart) resultChart.destroy();
+        resultChart = new Chart(document.getElementById('resultChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Investido', 'Lucro', 'Impostos'],
+                datasets: [{ data: [totalInvested, netProfit, totalIOF + totalIR], backgroundColor: ['#64748b', '#10b981', '#ef4444'] }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, cutout: '78%' }
+        });
+    }
+
+    function resetAll() { location.reload(); }
 
     window.onload = () => {
         if (localStorage.getItem('darkMode') === 'true') document.documentElement.classList.add('dark');
@@ -207,9 +374,9 @@
 
         const today = new Date();
         document.getElementById('startDate').valueAsDate = today;
-        const end = new Date(today);
-        end.setMonth(end.getMonth() + 12);
+        const end = new Date(today); end.setMonth(end.getMonth() + 12);
         document.getElementById('endDate').valueAsDate = end;
+
         fetchCDI();
     };
 </script>
