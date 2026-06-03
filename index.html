@@ -53,6 +53,53 @@
             /* Carregamento instantâneo sem atrasos visuais */
         }
 
+        /* --- BANNER FLUTUANTE DE INSTALAÇÃO PWA --- */
+        .install-banner {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #209cff;
+            color: #ffffff;
+            padding: 12px 24px;
+            border-radius: 30px;
+            display: none; /* Escondido por padrão, exibido dinamicamente via JS */
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            z-index: 1000;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            font-size: 0.85rem;
+            font-weight: 500;
+            width: calc(100% - 40px);
+            max-width: 450px;
+            animation: slideDown 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .install-banner button {
+            background: #ffffff;
+            color: #209cff;
+            border: none;
+            outline: none;
+            padding: 6px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 0.8rem;
+        }
+
+        .install-banner button:hover {
+            background: #f1f5f9;
+            transform: scale(1.05);
+        }
+
+        @keyframes slideDown {
+            from { top: -100px; opacity: 0; }
+            to { top: 20px; opacity: 1; }
+        }
+
         /* --- DOCK DE NAVEGAÇÃO INFERIOR COMPLETO (NAS BORDAS) --- */
         .bottom-dock {
             width: 100%;
@@ -155,6 +202,12 @@
 </head>
 <body>
 
+    <!-- Banner personalizado para ativação da instalação PWA -->
+    <div id="pwaInstallBanner" class="install-banner">
+        <span>Instalar a aplicação para usar offline?</span>
+        <button id="pwaInstallBtn">Instalar</button>
+    </div>
+
     <!-- 1. ÁREA CENTRAL DE CONTEÚDO (Páginas do seu site) -->
     <div class="content-wrapper">
         <!-- 
@@ -239,8 +292,49 @@
             item.addEventListener('touchstart', handleMenuNavigation, { passive: true });
         });
 
-        // 2. REGISTO DO SERVICE WORKER SEGURO
-        // Validamos se o navegador suporta e se o site corre num protocolo válido (http/https) para evitar erros em blob/sandbox
+        // 2. LOGICA INTELIGENTE DE INSTALAÇÃO DA PWA (beforeinstallprompt)
+        let deferredPrompt;
+        const installBanner = document.getElementById('pwaInstallBanner');
+        const installBtn = document.getElementById('pwaInstallBtn');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Previne que o prompt padrão do Chrome apareça sem controlo
+            e.preventDefault();
+            // Guarda o evento para ser acionado sob o clique do utilizador
+            deferredPrompt = e;
+            // Revela o banner de instalação personalizado de forma elegante
+            if (installBanner) {
+                installBanner.style.display = 'flex';
+            }
+        });
+
+        if (installBtn) {
+            installBtn.addEventListener('click', async () => {
+                if (!deferredPrompt) return;
+                // Exibe o prompt oficial de instalação do sistema operativo
+                deferredPrompt.prompt();
+                // Aguarda pela resposta final de confirmação do utilizador
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log(`Resposta do utilizador ao prompt de instalação: ${outcome}`);
+                // Reset da variável
+                deferredPrompt = null;
+                // Oculta o banner de convite
+                if (installBanner) {
+                    installBanner.style.display = 'none';
+                }
+            });
+        }
+
+        // Esconde o banner caso a instalação seja concluída com sucesso
+        window.addEventListener('appinstalled', (evt) => {
+            console.log('Aplicação PWA instalada com sucesso!');
+            if (installBanner) {
+                installBanner.style.display = 'none';
+            }
+        });
+
+        // 3. REGISTO DO SERVICE WORKER SEGURO
+        // Validamos se o navegador suporta e se o protocolo web é estritamente HTTP ou HTTPS (previne erros em Sandboxes locais)
         const isSupportedProtocol = window.location.protocol === 'http:' || window.location.protocol === 'https:';
         
         if ('serviceWorker' in navigator && isSupportedProtocol) {
@@ -254,7 +348,7 @@
                     });
             });
         } else {
-            console.log('Registo do Service Worker ignorado (Ambiente local de desenvolvimento ou protocolo não suportado).');
+            console.log('Registo do Service Worker ignorado neste ambiente (não suporta HTTPS/HTTP padrão).');
         }
     </script>
 </body>
