@@ -257,6 +257,16 @@
                                 <span class="font-bold text-green-600" id="detNetProfit">+ R$ 0,00</span>
                             </div>
 
+                            <!-- Médias restauradas -->
+                            <div class="flex justify-between mt-1">
+                                <span class="text-slate-400 text-xs lg:text-sm">Média Diária (Líq.)</span>
+                                <span class="font-medium text-slate-600 text-xs lg:text-sm" id="detDailyAvg">R$ 0,00</span>
+                            </div>
+                            <div class="flex justify-between pb-2 border-b border-dashed border-slate-200 mb-2">
+                                <span class="text-slate-400 text-xs lg:text-sm">Média Mensal (Líq.)</span>
+                                <span class="font-medium text-slate-600 text-xs lg:text-sm" id="detMonthlyAvg">R$ 0,00</span>
+                            </div>
+
                             <div class="flex justify-between pt-2">
                                 <span class="font-bold text-slate-700 text-base lg:text-lg">Valor Resgate Final</span>
                                 <span class="font-bold text-slate-900 text-base lg:text-xl" id="detTotalNet">R$ 0,00</span>
@@ -700,6 +710,14 @@
             
             document.getElementById('detNetProfit').innerText = `+ ${formatBRL(netProfit)}`; 
             document.getElementById('detTotalNet').innerText = formatBRL(totalNet);
+
+            // Restaurando o cálculo das médias
+            const totalDaysCount = initBD.totalDays; 
+            const dailyAvg = totalDaysCount > 0 ? netProfit / totalDaysCount : 0;
+            const monthlyAvg = totalDaysCount > 0 ? netProfit / (totalDaysCount / 30) : 0;
+
+            document.getElementById('detDailyAvg').innerText = formatBRL(dailyAvg);
+            document.getElementById('detMonthlyAvg').innerText = formatBRL(monthlyAvg);
 
             // Poupança Banner
             const banner = document.getElementById('poupancaBanner');
