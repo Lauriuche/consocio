@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
@@ -10,7 +11,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="MagicMenu">
-    <link rel="apple-touch-icon" href="icon-192.png">
+    
+    <!-- Ícone alternativo para dispositivos Apple embutido via SVG de forma direta -->
+    <link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='40' fill='%23209cff'/><text x='96' y='125' font-family='Arial, sans-serif' font-weight='bold' font-size='100' fill='%23ffffff' text-anchor='middle'>M</text></svg>">
 
     <!-- Google Fonts para tipografia limpa e moderna -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -51,6 +54,7 @@
             background: #1d212b;
         }
 
+        /* */
         /* --- BANNER FLUTUANTE DE INSTALAÇÃO PWA --- */
         .install-banner {
             position: absolute;
@@ -61,10 +65,10 @@
             color: #ffffff;
             padding: 12px 24px;
             border-radius: 30px;
-            display: none; /* Escondido por padrão, exibido dinamicamente via JS */
+            display: none; /* Exibido dinamicamente via JS se a PWA for elegível */
             align-items: center;
             justify-content: space-between;
-            gap: 20px;
+            gap: 15px;
             z-index: 1000;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
             font-size: 0.85rem;
@@ -75,7 +79,13 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .install-banner button {
+        .install-banner-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .install-banner button#pwaInstallBtn {
             background: #ffffff;
             color: #209cff;
             border: none;
@@ -88,9 +98,26 @@
             font-size: 0.8rem;
         }
 
-        .install-banner button:hover {
+        .install-banner button#pwaInstallBtn:hover {
             background: #f1f5f9;
             transform: scale(1.05);
+        }
+
+        .install-banner button#pwaDismissBtn {
+            background: transparent;
+            color: rgba(255, 255, 255, 0.8);
+            border: none;
+            outline: none;
+            font-size: 1.3rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.3s ease;
+        }
+
+        .install-banner button#pwaDismissBtn:hover {
+            color: #ffffff;
         }
 
         @keyframes slideDown {
@@ -98,6 +125,7 @@
             to { top: 20px; opacity: 1; }
         }
 
+        /* */
         /* --- DOCK DE NAVEGAÇÃO INFERIOR COMPLETO (NAS BORDAS) --- */
         .bottom-dock {
             width: 100%;
@@ -131,6 +159,8 @@
             max-width: 600px; /* Limite de largura elegante em monitores grandes para não dispersar os ícones */
             padding: 0;
             margin: 0;
+            /* Define este elemento como container para podermos medir a sua largura em tempo real (cqw) */
+            container-type: inline-size;
         }
 
         .navigation ul li {
@@ -153,23 +183,25 @@
             text-decoration: none;
         }
 
+        /* */
         .navigation ul li a .icon {
             position: relative;
             display: block;
             line-height: 75px;
             font-size: 1.55em;
             text-align: center;
-            transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             color: #ffffff; /* Ícones inativos em branco */
+            will-change: transform; /* Força o navegador a criar uma camada dedicada na GPU */
         }
 
-        /* Transição de subida do ícone ativo */
+        /* Transição de subida do ícone ativo super suave na GPU */
         .navigation ul li.active a .icon {
-            transform: translateY(-32px);
+            transform: translate3d(0, -32px, 0);
             color: #209cff; /* Cor ativa correspondente à barra */
         }
 
-        /* --- O INDICADOR CIRCULAR (BALÃO BRANCO FLUIDO) --- */
+        /* --- O INDICADOR CIRCULAR (BALÃO BRANCO FLUIDO COM GPU) --- */
         .indicator {
             position: absolute;
             top: -35px; /* Metade projetada para fora da barra */
@@ -179,10 +211,12 @@
             border-radius: 50%;
             border: 6px solid #1d212b; /* Contorno exato que simula o corte sobre o fundo */
             z-index: 2;
-            transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            /* Transição de transform acelerada por hardware (Sem lag ou travamentos) */
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
             pointer-events: none;
             left: 0;
+            will-change: transform; /* Otimização máxima para renderização ultra rápida */
         }
 
         /* Garante que o ícone ativo se sobreponha ao indicador */
@@ -190,12 +224,21 @@
             z-index: 10;
         }
 
-        /* --- POSICIONAMENTO DINÂMICO BASEADO EM PERCENTAGEM --- */
-        .navigation ul li:nth-child(1).active ~ .indicator { left: calc(10% - 35px); }
-        .navigation ul li:nth-child(2).active ~ .indicator { left: calc(30% - 35px); }
-        .navigation ul li:nth-child(3).active ~ .indicator { left: calc(50% - 35px); }
-        .navigation ul li:nth-child(4).active ~ .indicator { left: calc(70% - 35px); }
-        .navigation ul li:nth-child(5).active ~ .indicator { left: calc(90% - 35px); }
+        /* 
+           --- POSICIONAMENTO BASEADO EM CONTAINER QUERIES (cqw) ---
+           Calculamos dinamicamente com base na largura real do container 'ul':
+           - Item 1 (Centro a 10% da largura do container): 10cqw
+           - Item 2 (Centro a 30% da largura do container): 30cqw
+           - Item 3 (Centro a 50% da largura do container): 50cqw
+           - Item 4 (Centro a 70% da largura do container): 70cqw
+           - Item 5 (Centro a 90% da largura do container): 90cqw
+           Subtraímos 35px para centralizar perfeitamente o círculo de 70px de diâmetro.
+        */
+        .navigation ul li:nth-child(1).active ~ .indicator { transform: translate3d(calc(10cqw - 35px), 0, 0); }
+        .navigation ul li:nth-child(2).active ~ .indicator { transform: translate3d(calc(30cqw - 35px), 0, 0); }
+        .navigation ul li:nth-child(3).active ~ .indicator { transform: translate3d(calc(50cqw - 35px), 0, 0); }
+        .navigation ul li:nth-child(4).active ~ .indicator { transform: translate3d(calc(70cqw - 35px), 0, 0); }
+        .navigation ul li:nth-child(5).active ~ .indicator { transform: translate3d(calc(90cqw - 35px), 0, 0); }
     </style>
 </head>
 <body>
@@ -203,15 +246,14 @@
     <!-- Banner personalizado para ativação da instalação PWA -->
     <div id="pwaInstallBanner" class="install-banner">
         <span>Instalar a aplicação para usar offline?</span>
-        <button id="pwaInstallBtn">Instalar</button>
+        <div class="install-banner-actions">
+            <button id="pwaInstallBtn">Instalar</button>
+            <button id="pwaDismissBtn" title="Fechar">&times;</button>
+        </div>
     </div>
 
     <!-- 1. ÁREA CENTRAL DE CONTEÚDO (Páginas do seu site) -->
     <div class="content-wrapper">
-        <!-- 
-          O iframe aponta diretamente para "cdb.html" por padrão,
-          fazendo com que a primeira página carregue automaticamente ao iniciar de forma instantânea.
-        -->
         <iframe 
             name="content-frame" 
             id="mainFrame"
@@ -232,7 +274,7 @@
                         </span>
                     </a>
                 </li>
-                <!-- Link 2: Consórcio (Grupo/Associação) -->
+                <!-- Link 2: Consórcio -->
                 <li class="list" data-url="consocio.html">
                     <a href="consocio.html" target="content-frame">
                         <span class="icon">
@@ -241,24 +283,24 @@
                     </a>
                 </li>
                 <!-- Link 3: Chat / Mensagens -->
-                <li class="list" data-url="chat.html">
-                    <a href="chat.html" target="content-frame">
+                <li class="list" data-url="manutenção.html">
+                    <a href="manutenção.html" target="content-frame">
                         <span class="icon">
                             <ion-icon name="chatbubble-outline"></ion-icon>
                         </span>
                     </a>
                 </li>
                 <!-- Link 4: Câmara / Galeria -->
-                <li class="list" data-url="camera.html">
-                    <a href="camera.html" target="content-frame">
+                <li class="list" data-url="manutenção.html">
+                    <a href="manutenção.html" target="content-frame">
                         <span class="icon">
                             <ion-icon name="camera-outline"></ion-icon>
                         </span>
                     </a>
                 </li>
                 <!-- Link 5: Definições -->
-                <li class="list" data-url="settings.html">
-                    <a href="settings.html" target="content-frame">
+                <li class="list" data-url="manutenção.html">
+                    <a href="manutenção.html" target="content-frame">
                         <span class="icon">
                             <ion-icon name="settings-outline"></ion-icon>
                         </span>
@@ -274,12 +316,13 @@
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 
+    <!-- -->
     <!-- Script de Animação, Sincronização de Páginas e Registo do PWA -->
     <script>
         const listItems = document.querySelectorAll('.list');
         const frame = document.getElementById('mainFrame');
 
-        // 1. GESTÃO DOS CLIQUES NO MENU (Instantâneo)
+        // 1. GESTÃO DOS CLIQUES NO MENU
         function handleMenuNavigation(e) {
             listItems.forEach((item) => item.classList.remove('active'));
             this.classList.add('active');
@@ -294,13 +337,24 @@
         let deferredPrompt;
         const installBanner = document.getElementById('pwaInstallBanner');
         const installBtn = document.getElementById('pwaInstallBtn');
+        const dismissBtn = document.getElementById('pwaDismissBtn');
+
+        // Verifica de imediato se o utilizador já tem a aplicação aberta em modo autónomo (Standalone/App)
+        const isStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+        
+        // Verifica se o utilizador já concluiu a instalação no passado (pela flag local) ou se recusou recentemente
+        const isAlreadyInstalled = localStorage.getItem('pwaInstalled') === 'true';
+        const isPermanentlyDismissed = localStorage.getItem('pwaDismissed') === 'true';
 
         window.addEventListener('beforeinstallprompt', (e) => {
-            // Previne que o prompt padrão do Chrome apareça sem controlo
+            // Se já estiver instalado ou se estiver a correr no modo app, nunca exibe o banner
+            if (isStandaloneMode || isAlreadyInstalled || isPermanentlyDismissed) {
+                return;
+            }
+
             e.preventDefault();
-            // Guarda o evento para ser acionado sob o clique do utilizador
             deferredPrompt = e;
-            // Revela o banner de instalação personalizado de forma elegante
+            
             if (installBanner) {
                 installBanner.style.display = 'flex';
             }
@@ -309,30 +363,40 @@
         if (installBtn) {
             installBtn.addEventListener('click', async () => {
                 if (!deferredPrompt) return;
-                // Exibe o prompt oficial de instalação do sistema operativo
                 deferredPrompt.prompt();
-                // Aguarda pela resposta final de confirmação do utilizador
                 const { outcome } = await deferredPrompt.userChoice;
-                console.log(`Resposta do utilizador ao prompt de instalação: ${outcome}`);
-                // Reset da variável
+                console.log(`Escolha de instalação: ${outcome}`);
+                
+                if (outcome === 'accepted') {
+                    localStorage.setItem('pwaInstalled', 'true');
+                }
+                
                 deferredPrompt = null;
-                // Oculta o banner de convite
                 if (installBanner) {
                     installBanner.style.display = 'none';
                 }
             });
         }
 
-        // Esconde o banner caso a instalação seja concluída com sucesso
+        // Lógica de descarte permanente (Fechar o banner)
+        if (dismissBtn) {
+            dismissBtn.addEventListener('click', () => {
+                localStorage.setItem('pwaDismissed', 'true');
+                if (installBanner) {
+                    installBanner.style.display = 'none';
+                }
+            });
+        }
+
         window.addEventListener('appinstalled', (evt) => {
-            console.log('Aplicação PWA instalada com sucesso!');
+            console.log('Aplicação instalada com sucesso no sistema!');
+            localStorage.setItem('pwaInstalled', 'true');
             if (installBanner) {
                 installBanner.style.display = 'none';
             }
         });
 
         // 3. REGISTO DO SERVICE WORKER SEGURO
-        // Validamos se o navegador suporta e se o protocolo web é estritamente HTTP ou HTTPS (previne erros em Sandboxes locais)
         const isSupportedProtocol = window.location.protocol === 'http:' || window.location.protocol === 'https:';
         
         if ('serviceWorker' in navigator && isSupportedProtocol) {
@@ -346,7 +410,7 @@
                     });
             });
         } else {
-            console.log('Registo do Service Worker ignorado neste ambiente (não suporta HTTPS/HTTP padrão).');
+            console.log('Ambiente ou protocolo não suportado para instalação PWA.');
         }
     </script>
 </body>
