@@ -1,50 +1,59 @@
-// NOME DO CACHE
-const CACHE_NAME = 'cdb-calc-v1';
+// Nome do cache para controlo de versões
+const CACHE_NAME = 'magic-menu-cache-v1';
 
-// FICHEIROS A SEREM GUARDADOS EM CACHE PARA FUNCIONAMENTO OFFLINE
-const urlsToCache = [
+// Recursos estáticos mínimos a guardar para funcionamento offline básico
+const ASSETS_TO_CACHE = [
   './',
   './index.html',
-  './manifest.json',
-  // Se tivéssemos imagens locais, íamos incluí-las aqui
-  // O Tailwind e Chart.js estão via CDN, normalmente não são "cacheados" desta forma simples, 
-  // mas o navegador fará o seu próprio cache. Para PWA offline robusta, o ideal seria baixar os ficheiros localmente.
+  './manifest.json'
 ];
 
-// INSTALAÇÃO DO SERVICE WORKER E ARMAZENAMENTO NO CACHE
+// Instalação do Service Worker e cacheamento inicial
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('Cache aberto');
-        return cache.addAll(urlsToCache);
-      })
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(ASSETS_TO_CACHE);
+    })
   );
+  self.skipWaiting();
 });
 
-// INTERCETAR PEDIDOS DE REDE (FETCH) PARA SERVIR DO CACHE SE ESTIVER OFFLINE
-self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // Se encontrar no cache, devolve do cache. Caso contrário, tenta a rede.
-        return response || fetch(event.request);
-      })
-  );
-});
-
-// ATUALIZAÇÃO DO SERVICE WORKER (Limpar caches antigos)
+// Ativação e limpeza de versões antigas de cache
 self.addEventListener('activate', (event) => {
-  const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheWhitelist.indexOf(cacheName) === -1) {
-            return caches.delete(cacheName);
+        cacheNames.map((cache) => {
+          if (cache !== CACHE_NAME) {
+            return caches.delete(cache);
           }
         })
       );
     })
+  );
+  self.clients.claim();
+});
+
+// Estratégia de Rede com queda para Cache (Network-First)
+// Garante que o utilizador vê sempre a versão mais recente se tiver internet
+self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'GET') return;
+
+  event.respondWith(
+    fetch(event.request)
+      .then((response) => {
+        // Se a resposta for válida, guarda uma cópia atualizada no cache
+        if (response && response.status === 200) {
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseClone);
+          });
+        }
+        return response;
+      })
+      .catch(() => {
+        // Se falhar a ligação (offline), tenta obter do cache
+        return caches.match(event.request);
+      })
   );
 });
