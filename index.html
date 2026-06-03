@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Principal - Magic Navigation</title>
+    <!-- Google Fonts para tipografia limpa e moderna -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- ESTILOS DE RESET E ESTRUTURA DA PÁGINA COMPLETA --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #1d212b; /* Fundo base escuro correspondente ao vídeo */
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- VISUALIZADOR DE PÁGINAS (IFRAME FULLSCREEN) --- */
+        .content-wrapper {
+            flex: 1;
+            width: 100%;
+            position: relative;
+            background: #1d212b;
+        }
+
+        /* O iframe ocupa todo o espaço útil acima do menu */
+        .main-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            outline: none;
+            background: #1d212b;
+            transition: opacity 0.3s ease;
+        }
+
+        /* --- DOCK DE NAVEGAÇÃO INFERIOR COMPLETO (NAS BORDAS) --- */
+        .bottom-dock {
+            width: 100%;
+            height: 85px; /* Altura ajustada para acomodar perfeitamente o balão flutuante */
+            background: #1d212b; /* Fusão de cor com o fundo */
+            display: flex;
+            justify-content: center;
+            align-items: flex-end; /* Alinha a barra de navegação totalmente encostada ao fundo */
+            position: relative;
+            z-index: 100;
+        }
+
+        /* --- O MENU MÁGICO COMPLETO ENCOSTANDO NAS BORDAS --- */
+        .navigation {
+            width: 100%; /* Encosta a 100% nas bordas esquerda e direita */
+            height: 70px; /* Altura exata da barra conforme o vídeo */
+            background: #209cff; /* Azul clássico do vídeo */
+            position: relative;
+            display: flex;
+            justify-content: center; /* Centraliza os itens internamente em ecrãs muito largos */
+            align-items: center;
+            z-index: 1;
+            border-radius: 0; /* Remove os cantos arredondados externos para colar nas bordas */
+            box-shadow: 0 -10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .navigation ul {
+            position: relative;
+            display: flex;
+            width: 100%; /* Distribuição fluida em toda a largura */
+            max-width: 600px; /* Limite de largura elegante em monitores grandes para não dispersar os ícones */
+            padding: 0;
+            margin: 0;
+        }
+
+        .navigation ul li {
+            position: relative;
+            list-style: none;
+            flex: 1; /* Distribui os 5 elementos de forma perfeitamente idêntica (20% de largura cada) */
+            height: 70px;
+            z-index: 1;
+        }
+
+        .navigation ul li a {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .navigation ul li a .icon {
+            position: relative;
+            display: block;
+            line-height: 75px;
+            font-size: 1.55em;
+            text-align: center;
+            transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            color: #ffffff; /* Ícones inativos em branco */
+        }
+
+        /* Transição de subida do ícone ativo */
+        .navigation ul li.active a .icon {
+            transform: translateY(-32px);
+            color: #209cff; /* Cor ativa correspondente à barra */
+        }
+
+        /* --- O INDICADOR CIRCULAR (BALÃO BRANCO FLUIDO) --- */
+        .indicator {
+            position: absolute;
+            top: -35px; /* Metade projetada para fora da barra */
+            width: 70px;
+            height: 70px;
+            background: #ffffff;
+            border-radius: 50%;
+            border: 6px solid #1d212b; /* Contorno exato que simula o corte sobre o fundo */
+            z-index: 2;
+            transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+            pointer-events: none;
+            left: 0;
+        }
+
+        /* Garante que o ícone ativo se sobreponha ao indicador */
+        .navigation ul li.active {
+            z-index: 10;
+        }
+
+        /* --- POSICIONAMENTO DINÂMICO BASEADO EM PERCENTAGEM ---
+           Como o menu é fluido e tem 5 itens (cada um com 20% de largura):
+           - Item 1 está centrado a 10% da largura total
+           - Item 2 está centrado a 30% da largura total
+           - Item 3 está centrado a 50% da largura total
+           - Item 4 está centrado a 70% da largura total
+           - Item 5 está centrado a 90% da largura total
+           Subtraímos 35px correspondentes a metade do diâmetro do indicador (70px) para centralização perfeita.
+        */
+        .navigation ul li:nth-child(1).active ~ .indicator { left: calc(10% - 35px); }
+        .navigation ul li:nth-child(2).active ~ .indicator { left: calc(30% - 35px); }
+        .navigation ul li:nth-child(3).active ~ .indicator { left: calc(50% - 35px); }
+        .navigation ul li:nth-child(4).active ~ .indicator { left: calc(70% - 35px); }
+        .navigation ul li:nth-child(5).active ~ .indicator { left: calc(90% - 35px); }
+    </style>
+</head>
+<body>
+
+    <!-- 1. ÁREA CENTRAL DE CONTEÚDO (Páginas do seu site) -->
+    <div class="content-wrapper">
+        <!-- 
+          O iframe carrega as suas páginas externas localizadas na mesma pasta (raiz).
+          Crie os ficheiros reais: home.html, profile.html, chat.html, camera.html, settings.html.
+        -->
+        <iframe 
+            name="content-frame" 
+            id="mainFrame"
+            class="main-frame" 
+            srcdoc="<!DOCTYPE html><html><head><style>body{background:#1d212b;color:#fff;font-family:sans-serif;display:flex;flex-direction:column;justify-content:center;align-items:center;height:90vh;margin:0;text-align:center;}h1{font-size:28px;color:#209cff;margin-bottom:8px;}p{font-size:15px;color:#64748b;max-width:320px;line-height:1.6;}span{background:#209cff;color:#fff;padding:2px 8px;border-radius:4px;font-size:12px;font-family:monospace;}</style></head><body><h1>Index Carregado!</h1><p>O menu agora estende-se perfeitamente até às bordas esquerda, direita e inferior do ecrã.<br><br>Crie o ficheiro <span>home.html</span> na sua pasta de trabalho para ver o seu conteúdo aqui.</p></body></html>">
+        </iframe>
+    </div>
+
+    <!-- 2. DOCK INFERIOR (NAS BORDAS DA TELA) -->
+    <div class="bottom-dock">
+        <div class="navigation">
+            <ul>
+                <!-- Link 1: Início -->
+                <li class="list active" data-url="cdb.html">
+                    <a href="cdb.html" target="content-frame">
+                        <span class="icon">
+                            <ion-icon name="home-outline"></ion-icon>
+                        </span>
+                    </a>
+                </li>
+                <!-- Link 2: Perfil -->
+                <li class="list" data-url="consocio.html">
+                    <a href="consocio.html" target="content-frame">
+                        <span class="icon">
+                            <ion-icon name="person-outline"></ion-icon>
+                        </span>
+                    </a>
+                </li>
+                <!-- Link 3: Chat / Mensagens -->
+                <li class="list" data-url="chat.html">
+                    <a href="chat.html" target="content-frame">
+                        <span class="icon">
+                            <ion-icon name="chatbubble-outline"></ion-icon>
+                        </span>
+                    </a>
+                </li>
+                <!-- Link 4: Câmara / Galeria -->
+                <li class="list" data-url="camera.html">
+                    <a href="camera.html" target="content-frame">
+                        <span class="icon">
+                            <ion-icon name="camera-outline"></ion-icon>
+                        </span>
+                    </a>
+                </li>
+                <!-- Link 5: Definições -->
+                <li class="list" data-url="settings.html">
+                    <a href="settings.html" target="content-frame">
+                        <span class="icon">
+                            <ion-icon name="settings-outline"></ion-icon>
+                        </span>
+                    </a>
+                </li>
+                <!-- O Balão Indicador Branco que desliza fluidamente -->
+                <div class="indicator"></div>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Scripts do Ionicons para renderizar os ícones do vídeo -->
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+
+    <!-- Script de Animação e Sincronização de Páginas -->
+    <script>
+        const listItems = document.querySelectorAll('.list');
+        const frame = document.getElementById('mainFrame');
+
+        function handleMenuNavigation(e) {
+            // Remove a classe "active" de todos os botões do menu
+            listItems.forEach((item) => item.classList.remove('active'));
+            // Aplica a classe "active" ao item clicado para deslizar o indicador
+            this.classList.add('active');
+
+            // Adiciona efeito suave de transição de opacidade ao carregar uma nova página
+            if (frame) {
+                frame.style.opacity = '0.4';
+            }
+        }
+
+        // Associa os eventos de clique e toque nos dispositivos móveis
+        listItems.forEach((item) => {
+            item.addEventListener('click', handleMenuNavigation);
+            item.addEventListener('touchstart', handleMenuNavigation, { passive: true });
+        });
+
+        // Repõe a opacidade total quando a página termina de carregar no iframe
+        frame.addEventListener('load', () => {
+            frame.style.opacity = '1';
+        });
+    </script>
+</body>
+</html>
