@@ -1,24 +1,31 @@
-// Nome do cache para controlo de versões
+// Nome do cache para controle de versões
 const CACHE_NAME = 'magic-menu-cache-v1';
 
-// Recursos estáticos mínimos a guardar para funcionamento offline básico
+// Recursos estáticos principais para guardar em cache
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './manifest.json'
 ];
 
-// Instalação do Service Worker e cacheamento inicial
+// Instalação do Service Worker com cache seguro (evita falhas de instalação se algum arquivo estiver ausente)
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
+      // Tenta cachear os arquivos individualmente. Se um falhar, o Service Worker ainda instala com sucesso!
+      return Promise.allSettled(
+        ASSETS_TO_CACHE.map((url) => {
+          return cache.add(url).catch((err) => {
+            console.warn(`Não foi possível pré-cachear o recurso: ${url}`, err);
+          });
+        })
+      );
     })
   );
   self.skipWaiting();
 });
 
-// Ativação e limpeza de versões antigas de cache
+// Ativação e limpeza de caches antigos
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -35,14 +42,13 @@ self.addEventListener('activate', (event) => {
 });
 
 // Estratégia de Rede com queda para Cache (Network-First)
-// Garante que o utilizador vê sempre a versão mais recente se tiver internet
+// Carrega instantaneamente a versão online e salva em cache para uso offline
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // Se a resposta for válida, guarda uma cópia atualizada no cache
         if (response && response.status === 200) {
           const responseClone = response.clone();
           caches.open(CACHE_NAME).then((cache) => {
@@ -52,7 +58,6 @@ self.addEventListener('fetch', (event) => {
         return response;
       })
       .catch(() => {
-        // Se falhar a ligação (offline), tenta obter do cache
         return caches.match(event.request);
       })
   );
