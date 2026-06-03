@@ -1,24 +1,21 @@
 {
+  "name": "MagicMenu",
   "short_name": "MagicMenu",
-  "name": "Magic Navigation Menu",
-  "description": "Menu de navegação animado e interativo com transições fluidas.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#1d212b",
+  "theme_color": "#209cff",
   "icons": [
     {
       "src": "icon-192.png",
-      "type": "image/png",
       "sizes": "192x192",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
       "src": "icon-512.png",
-      "type": "image/png",
       "sizes": "512x512",
-      "purpose": "any maskable"
+      "type": "image/png"
     }
-  ],
-  "start_url": "./index.html",
-  "background_color": "#1d212b",
-  "theme_color": "#209cff",
-  "display": "standalone",
-  "orientation": "portrait"
+  ]
 }
