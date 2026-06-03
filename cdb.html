@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>App CDB</title>
+    <title>App CDB Pro</title>
     
     <!-- PWA Meta Tags -->
     <link rel="manifest" href="manifest.json">
@@ -48,11 +48,22 @@
             max-height: 0;
             opacity: 0;
             overflow: hidden;
-            transition: all 0.4s ease-in-out;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .details-enter.active {
-            max-height: 1500px; /* Increased for desktop */
+            max-height: 1500px;
             opacity: 1;
+        }
+        
+        /* Shimmer effect para loading */
+        .shimmer {
+            animation: shimmer 2s infinite linear;
+            background: linear-gradient(to right, #eff1f3 4%, #e2e8f0 25%, #eff1f3 36%);
+            background-size: 1000px 100%;
+        }
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
         }
     </style>
 </head>
@@ -71,16 +82,23 @@
                         </div>
                         <span class="font-bold text-lg lg:text-2xl tracking-tight">Simulador CDB</span>
                     </div>
-                    <button onclick="window.location.reload()" class="text-slate-400 hover:text-white transition-colors">
-                        <i class="fas fa-eraser lg:text-xl"></i>
-                    </button>
+                    
+                    <!-- NEW: Share & Clear Buttons -->
+                    <div class="flex gap-4">
+                        <button onclick="shareResult()" id="btnShare" class="text-slate-400 hover:text-white transition-colors hidden opacity-0 transition-opacity">
+                            <i class="fas fa-share-alt lg:text-xl"></i>
+                        </button>
+                        <button onclick="resetApp()" class="text-slate-400 hover:text-white transition-colors">
+                            <i class="fas fa-eraser lg:text-xl"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Big Result Display (Main Screen) -->
                 <div class="text-center mt-2">
                     <p class="text-slate-400 text-xs lg:text-sm uppercase tracking-wider mb-1 lg:mb-2">Resultado Líquido Estimado</p>
-                    <h1 class="text-4xl lg:text-6xl font-bold text-green-400 tracking-tight" id="headerResult">R$ 0,00</h1>
-                    <p class="text-xs lg:text-sm text-slate-500 mt-2 lg:mt-3" id="headerProfit">+ R$ 0,00 de lucro real</p>
+                    <h1 class="text-4xl lg:text-6xl font-bold text-green-400 tracking-tight transition-all duration-300" id="headerResult">R$ 0,00</h1>
+                    <p class="text-xs lg:text-sm text-slate-400 mt-2 lg:mt-3 bg-slate-800/50 inline-block px-3 py-1 rounded-full" id="headerProfit">+ R$ 0,00 de lucro real</p>
                 </div>
             </div>
         </div>
@@ -102,14 +120,14 @@
                             <label class="text-[10px] lg:text-xs font-semibold text-slate-500 ml-1">Inicial</label>
                             <div class="relative">
                                 <span class="absolute left-3 top-3 lg:top-4 text-slate-400 text-sm lg:text-base">R$</span>
-                                <input type="text" inputmode="numeric" id="investmentValue" class="app-input w-full pl-9 lg:pl-10 pr-3 py-3 lg:py-4 font-semibold text-slate-700 lg:text-lg" placeholder="0,00" oninput="formatCurrencyInput(this)">
+                                <input type="text" inputmode="numeric" id="investmentValue" class="app-input w-full pl-9 lg:pl-10 pr-3 py-3 lg:py-4 font-semibold text-slate-700 lg:text-lg" placeholder="0,00" oninput="formatCurrencyInput(this); saveDraft()">
                             </div>
                         </div>
                         <div>
                             <label class="text-[10px] lg:text-xs font-semibold text-slate-500 ml-1">Mensal</label>
                             <div class="relative">
                                 <span class="absolute left-3 top-3 lg:top-4 text-slate-400 text-sm lg:text-base">R$</span>
-                                <input type="text" inputmode="numeric" id="monthlyValue" class="app-input w-full pl-9 lg:pl-10 pr-3 py-3 lg:py-4 font-semibold text-slate-700 lg:text-lg" placeholder="0,00" oninput="formatCurrencyInput(this)">
+                                <input type="text" inputmode="numeric" id="monthlyValue" class="app-input w-full pl-9 lg:pl-10 pr-3 py-3 lg:py-4 font-semibold text-slate-700 lg:text-lg" placeholder="0,00" oninput="formatCurrencyInput(this); saveDraft()">
                             </div>
                         </div>
                     </div>
@@ -134,7 +152,7 @@
                     <div>
                         <label class="text-[10px] lg:text-xs font-semibold text-slate-500 ml-1">Rentabilidade (% do CDI)</label>
                         <div class="relative">
-                            <input type="number" id="cdbPercent" value="100" class="app-input w-full pl-4 pr-8 py-3 lg:py-4 font-semibold text-slate-700 lg:text-lg" placeholder="100">
+                            <input type="number" id="cdbPercent" value="100" class="app-input w-full pl-4 pr-8 py-3 lg:py-4 font-semibold text-slate-700 lg:text-lg" placeholder="100" onchange="saveDraft()">
                             <span class="absolute right-3 top-3 lg:top-4 text-slate-400 text-sm lg:text-base">%</span>
                         </div>
                     </div>
@@ -151,7 +169,7 @@
                         <div class="flex items-center gap-2" onclick="toggleBusinessDays()">
                             <span class="text-[10px] lg:text-xs font-bold text-slate-500" id="modeLabel">Dias Úteis</span>
                             <div class="relative inline-block w-8 lg:w-10 align-middle select-none">
-                                <input type="checkbox" id="useBusinessDays" class="toggle-checkbox absolute block w-4 h-4 lg:w-5 lg:h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-300" checked/>
+                                <input type="checkbox" id="useBusinessDays" class="toggle-checkbox absolute block w-4 h-4 lg:w-5 lg:h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-300" checked onchange="saveDraft()"/>
                                 <label for="useBusinessDays" class="toggle-label block overflow-hidden h-4 lg:h-5 rounded-full bg-slate-300 cursor-pointer"></label>
                             </div>
                         </div>
@@ -181,8 +199,8 @@
                 </div>
 
                 <!-- Action Button -->
-                <button onclick="calculate()" class="w-full bg-slate-900 text-white font-bold py-4 lg:py-5 rounded-xl lg:rounded-2xl shadow-lg hover:shadow-xl hover:bg-slate-800 active:scale-95 transition-all flex justify-center items-center gap-2 text-lg lg:text-xl mt-4">
-                    Calcular <i class="fas fa-chevron-right text-xs lg:text-sm"></i>
+                <button onclick="calculate()" class="w-full bg-slate-900 text-white font-bold py-4 lg:py-5 rounded-xl lg:rounded-2xl shadow-lg hover:shadow-xl hover:bg-slate-800 active:scale-95 transition-all flex justify-center items-center gap-2 text-lg lg:text-xl mt-4 group">
+                    Calcular <i class="fas fa-chevron-right text-xs lg:text-sm group-hover:translate-x-1 transition-transform"></i>
                 </button>
 
             </div>
@@ -191,10 +209,25 @@
             <div class="w-full lg:w-1/2">
                 <div id="detailsSection" class="details-enter bg-white rounded-xl border border-slate-100 shadow-sm lg:shadow-md lg:border-slate-200 mt-4 lg:mt-0 lg:sticky lg:top-10">
                     <div class="p-4 lg:p-8 space-y-4 lg:space-y-6">
-                        <h4 class="text-sm lg:text-lg font-bold text-slate-800 border-b border-slate-100 pb-2 lg:pb-4">Detalhes Financeiros</h4>
+                        
+                        <!-- NEW: Comparativo Poupança Banner -->
+                        <div id="poupancaBanner" class="hidden bg-emerald-50 border border-emerald-100 p-3 lg:p-4 rounded-xl flex items-start gap-3">
+                            <div class="bg-emerald-500 rounded-full p-1.5 mt-0.5">
+                                <i class="fas fa-piggy-bank text-white text-xs lg:text-sm"></i>
+                            </div>
+                            <div>
+                                <h5 class="text-xs lg:text-sm font-bold text-emerald-800">Comparação com Poupança</h5>
+                                <p class="text-[10px] lg:text-xs text-emerald-600 mt-0.5">O seu CDB rende <span id="poupancaDiff" class="font-bold">R$ 0,00</span> a mais do que se deixasse na poupança no mesmo período.</p>
+                            </div>
+                        </div>
+
+                        <h4 class="text-sm lg:text-lg font-bold text-slate-800 border-b border-slate-100 pb-2 lg:pb-4 flex justify-between items-center">
+                            Detalhes Financeiros
+                            <span class="text-[10px] bg-slate-100 text-slate-500 px-2 py-1 rounded font-normal">Valores Líquidos</span>
+                        </h4>
                         
                         <!-- Chart -->
-                        <div class="h-40 lg:h-64 w-full flex justify-center">
+                        <div class="h-40 lg:h-64 w-full flex justify-center relative">
                             <canvas id="resultChart"></canvas>
                         </div>
 
@@ -204,8 +237,8 @@
                                 <span class="font-semibold text-slate-700" id="detTotalInvested">R$ 0,00</span>
                             </div>
                             <div class="flex justify-between">
-                                <span class="text-slate-500">Bruto Final</span>
-                                <span class="font-semibold text-slate-700" id="detTotalGross">R$ 0,00</span>
+                                <span class="text-slate-500">Rendimento Bruto</span>
+                                <span class="font-semibold text-slate-700" id="detGrossProfit">+ R$ 0,00</span>
                             </div>
                             
                             <!-- IOF Row -->
@@ -215,32 +248,22 @@
                             </div>
 
                             <div class="flex justify-between">
-                                <span class="text-slate-500">Imposto de Renda <span class="text-[10px] lg:text-xs bg-red-100 text-red-600 px-1 rounded" id="detTaxRate">-</span></span>
+                                <span class="text-slate-500">Imposto de Renda <span class="text-[10px] lg:text-xs bg-red-100 text-red-600 px-1 rounded ml-1" id="detTaxRate">-</span></span>
                                 <span class="font-semibold text-red-500" id="detTotalTax">- R$ 0,00</span>
                             </div>
                             
-                            <div class="flex justify-between">
-                                <span class="text-slate-500">Rendimento Líquido Total</span>
-                                <span class="font-semibold text-green-600" id="detNetProfit">+ R$ 0,00</span>
-                            </div>
-
-                            <!-- Average Rows -->
                             <div class="flex justify-between border-t border-dashed border-slate-200 pt-2 lg:pt-3 mt-2 lg:mt-3">
-                                <span class="text-slate-500 text-xs lg:text-sm">Média Diária (Líq.)</span>
-                                <span class="font-semibold text-slate-700 text-xs lg:text-sm" id="detDailyAvg">R$ 0,00</span>
-                            </div>
-                            <div class="flex justify-between pb-2 lg:pb-3 border-b border-dashed border-slate-200">
-                                <span class="text-slate-500 text-xs lg:text-sm">Média Mensal (Líq.)</span>
-                                <span class="font-semibold text-slate-700 text-xs lg:text-sm" id="detMonthlyAvg">R$ 0,00</span>
+                                <span class="text-slate-500 font-medium">Lucro Líquido Real</span>
+                                <span class="font-bold text-green-600" id="detNetProfit">+ R$ 0,00</span>
                             </div>
 
-                            <div class="flex justify-between pt-2 lg:pt-3">
-                                <span class="font-bold text-slate-700 text-base lg:text-lg">Valor Líquido Final</span>
+                            <div class="flex justify-between pt-2">
+                                <span class="font-bold text-slate-700 text-base lg:text-lg">Valor Resgate Final</span>
                                 <span class="font-bold text-slate-900 text-base lg:text-xl" id="detTotalNet">R$ 0,00</span>
                             </div>
                         </div>
 
-                        <h4 class="text-sm lg:text-base font-bold text-slate-800 border-b border-slate-100 pb-2 pt-2 lg:pt-4">Calendário</h4>
+                        <h4 class="text-sm lg:text-base font-bold text-slate-800 border-b border-slate-100 pb-2 pt-2 lg:pt-4">Calendário de Prazos</h4>
                         <div class="grid grid-cols-4 gap-2 lg:gap-4 text-center text-[10px] lg:text-xs text-slate-500">
                             <div class="bg-slate-50 p-2 lg:p-3 rounded-lg border border-slate-100">
                                 <div class="font-bold text-lg lg:text-xl text-green-600" id="calBusiness">0</div>
@@ -256,7 +279,7 @@
                             </div>
                             <div class="bg-slate-50 p-2 lg:p-3 rounded-lg border border-slate-100">
                                 <div class="font-bold text-lg lg:text-xl text-blue-600" id="calTotal">0</div>
-                                Total
+                                Total Corridos
                             </div>
                         </div>
                     </div>
@@ -266,35 +289,78 @@
         </div>
     </div>
 
-    <!-- Notification -->
+    <!-- Notification Toast -->
     <div id="toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white px-4 py-2 lg:py-3 lg:px-6 rounded-full shadow-xl text-sm lg:text-base font-medium opacity-0 transition-opacity pointer-events-none z-50 flex items-center gap-2 w-max">
-        <i class="fas fa-check text-green-400"></i> <span id="toastMessage">Atualizado</span>
+        <i class="fas fa-check text-green-400" id="toastIcon"></i> <span id="toastMessage">Atualizado</span>
     </div>
 
-    <!-- PWA Service Worker Registration -->
     <script>
+        // PWA Registration
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log('Service Worker registado com sucesso.', reg))
-                    .catch(err => console.log('Erro ao registar o Service Worker.', err));
+                navigator.serviceWorker.register('sw.js').catch(() => {});
             });
         }
 
         const FIXED_HOLIDAYS = { '01-01': 1, '04-21': 1, '05-01': 1, '09-07': 1, '10-12': 1, '11-02': 1, '11-15': 1, '12-25': 1 };
         let resultChart = null;
+        let globalShareData = null; // Stores data for Web Share API
 
         window.onload = function() {
+            loadDraft(); // Recuperar memória inteligente (Local Storage)
+            
+            // Definir data de início para hoje caso esteja vazia
+            if (!document.getElementById('startDate').value) {
+                document.getElementById('startDate').valueAsDate = new Date();
+            }
+            fetchCDI(true);
+        };
+
+        // --- LOCAL STORAGE (MEMÓRIA INTELIGENTE) ---
+        function saveDraft() {
+            const data = {
+                percent: document.getElementById('cdbPercent').value,
+                useBusiness: document.getElementById('useBusinessDays').checked,
+                invest: document.getElementById('investmentValue').value,
+                monthly: document.getElementById('monthlyValue').value
+            };
+            localStorage.setItem('cdb_draft', JSON.stringify(data));
+        }
+
+        function loadDraft() {
+            const saved = localStorage.getItem('cdb_draft');
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    if(data.percent) document.getElementById('cdbPercent').value = data.percent;
+                    if(data.useBusiness !== undefined) {
+                        document.getElementById('useBusinessDays').checked = data.useBusiness;
+                        toggleBusinessDays();
+                    }
+                    if(data.invest) document.getElementById('investmentValue').value = data.invest;
+                    if(data.monthly) document.getElementById('monthlyValue').value = data.monthly;
+                } catch(e) {}
+            }
+        }
+
+        function resetApp() {
             document.getElementById('investmentValue').value = '';
             document.getElementById('monthlyValue').value = '';
             document.getElementById('monthsInput').value = '';
             document.getElementById('daysInput').value = '';
-            document.getElementById('startDate').value = '';
             document.getElementById('endDate').value = '';
+            document.getElementById('startDate').valueAsDate = new Date();
+            document.getElementById('detailsSection').classList.remove('active');
+            document.getElementById('btnShare').classList.add('hidden', 'opacity-0');
             
-            fetchCDI(true);
-        };
+            document.getElementById('headerResult').innerText = "R$ 0,00";
+            document.getElementById('headerProfit').innerText = "+ R$ 0,00 de lucro real";
+            
+            saveDraft();
+            showToast("Calculadora limpa", "fa-eraser");
+        }
 
+        // --- FORMATTERS ---
         function formatCurrencyInput(input) {
             let value = input.value.replace(/\D/g, ''); 
             if (value === '') { input.value = ''; return; }
@@ -307,6 +373,32 @@
             return parseFloat(valueStr.replace(/\./g, '').replace(',', '.'));
         }
 
+        function formatBRL(val) {
+            return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 2 });
+        }
+
+        // Animated Number Counter
+        function animateValue(objId, start, end, duration) {
+            let obj = document.getElementById(objId);
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                // Ease out cubic
+                const easeProgress = 1 - Math.pow(1 - progress, 3); 
+                const currentVal = start + easeProgress * (end - start);
+                
+                obj.innerHTML = formatBRL(currentVal);
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                } else {
+                    obj.innerHTML = formatBRL(end); // Ensure exact final value
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        // --- API FETCH ---
         async function fetchCDI(silent = false) {
             const icon = document.getElementById('refreshIcon');
             const input = document.getElementById('cdiRate');
@@ -322,30 +414,31 @@
                 
                 if (taxa && taxa.valor) {
                     input.value = parseFloat(taxa.valor).toFixed(2);
-                    if(!silent) showToast(`Atualizado online: ${taxa.valor}%`);
+                    localStorage.setItem('last_cdi_rate', taxa.valor);
+                    if(!silent) showToast(`CDI Atualizado: ${taxa.valor}%`, "fa-check");
                 } else {
-                    throw new Error('Taxa não encontrada na resposta');
+                    throw new Error('Taxa não encontrada');
                 }
             } catch (error) {
-                console.error("Erro ao buscar a taxa:", error);
-                if(!input.value) {
-                    input.value = "10.40"; 
-                }
-                if(!silent) showToast("Erro de ligação. A usar taxa salva.");
+                // Fallback para memória inteligente ou 10.40
+                const savedRate = localStorage.getItem('last_cdi_rate');
+                input.value = savedRate ? parseFloat(savedRate).toFixed(2) : "10.40";
+                
+                if(!silent) showToast("Offline. A usar última taxa salva.", "fa-wifi-slash", true);
             } finally {
                 if(!silent) setTimeout(() => icon.classList.remove('fa-spin'), 500);
             }
         }
 
-        function showToast(msg) {
+        function showToast(msg, iconClass = "fa-check", isError = false) {
             const toast = document.getElementById('toast');
+            const icon = document.getElementById('toastIcon');
+            
             document.getElementById('toastMessage').innerText = msg;
+            icon.className = `fas ${iconClass} ${isError ? 'text-orange-400' : 'text-green-400'}`;
+            
             toast.classList.remove('opacity-0');
-            setTimeout(() => toast.classList.add('opacity-0'), 2500);
-        }
-
-        function formatBRL(val) {
-            return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 2 });
+            setTimeout(() => toast.classList.add('opacity-0'), 3000);
         }
 
         function toggleBusinessDays() {
@@ -389,6 +482,7 @@
             if (isNaN(start.getTime())) return; 
 
             if (source === 'days' || source === 'end') monthsInput.value = '';
+            saveDraft();
 
             if (source === 'months') {
                 const months = parseInt(monthsInput.value) || 0;
@@ -489,7 +583,6 @@
         function calculate() {
             const principal = parseMoney(document.getElementById('investmentValue').value);
             const monthlyVal = parseMoney(document.getElementById('monthlyValue').value);
-            
             const cdiRateAnnual = parseFloat(document.getElementById('cdiRate').value);
             const cdbPercent = parseFloat(document.getElementById('cdbPercent').value);
             const startStr = document.getElementById('startDate').value;
@@ -497,45 +590,55 @@
             const useBusiness = document.getElementById('useBusinessDays').checked;
 
             if (isNaN(principal) || principal === 0) {
-                showToast("Insira o valor inicial");
+                showToast("Insira o valor inicial", "fa-exclamation-circle", true);
                 document.getElementById('investmentValue').focus();
                 return;
             }
             if (!startStr || !endStr) {
-                showToast("Preencha as datas");
+                showToast("Preencha as datas", "fa-calendar", true);
                 return;
             }
             if (isNaN(cdiRateAnnual)) {
-                showToast("CDI não definido");
+                showToast("Aguarde a taxa CDI", "fa-sync", true);
                 return;
             }
 
             const start = new Date(startStr);
             const end = new Date(endStr);
 
+            // Calculation Constants
             const rateDecimal = cdiRateAnnual / 100;
             const dailyRate = useBusiness ? (Math.pow(1+rateDecimal, 1/252)-1) : (Math.pow(1+rateDecimal, 1/365)-1);
             const cdbDailyRate = dailyRate * (cdbPercent/100);
+            
+            // Regra da Poupança: Se Selic(CDI) <= 8.5%, rende 70% da Selic. Se > 8.5%, rende ~6.17% aa.
+            const poupAnnualRate = cdiRateAnnual <= 8.5 ? (cdiRateAnnual * 0.7) : 6.17;
+            const poupDailyRate = Math.pow(1 + (poupAnnualRate / 100), 1 / 365) - 1; 
 
             function calcTranche(amount, breakdown) {
                 const days = useBusiness ? breakdown.businessDays : breakdown.totalDays;
+                
+                // CDB Gross
                 const gross = amount * Math.pow(1+cdbDailyRate, days);
                 const profit = gross - amount;
                 
+                // Poupança Gross (Baseado em dias corridos)
+                const poupGross = amount * Math.pow(1+poupDailyRate, breakdown.totalDays);
+                
+                // Taxes
                 const iofRate = getIOFRate(breakdown.totalDays);
                 const iof = profit * (iofRate / 100);
-
                 const irBase = Math.max(0, profit - iof);
                 const irRate = getTaxRate(breakdown.totalDays);
                 const ir = irBase * (irRate / 100);
                 
-                return { gross, profit, iof, ir, tax: iof + ir };
+                return { gross, profit, iof, ir, tax: iof + ir, poupGross };
             }
 
             const initBD = calculateDateBreakdown(start, end);
             const initRes = calcTranche(principal, initBD);
 
-            let monthlyInvested = 0, monthlyGross = 0, monthlyIOF = 0, monthlyIR = 0;
+            let monthlyInvested = 0, monthlyGross = 0, monthlyIOF = 0, monthlyIR = 0, monthlyPoup = 0;
             if (monthlyVal > 0) {
                 let next = addMonthsToDate(start, 1);
                 while (next < end) {
@@ -543,44 +646,73 @@
                     monthlyInvested += monthlyVal;
                     const res = calcTranche(monthlyVal, trancheBD);
                     monthlyGross += res.gross;
+                    monthlyPoup += res.poupGross;
                     monthlyIOF += res.iof;
                     monthlyIR += res.ir;
                     next = addMonthsToDate(next, 1);
                 }
             }
 
+            // Totais
             const totalInvested = principal + monthlyInvested;
+            
             const totalGross = initRes.gross + monthlyGross;
+            const totalGrossProfit = totalGross - totalInvested;
+            
+            const totalPoupGross = initRes.poupGross + monthlyPoup; // Poupanca is tax free
+            
             const totalIOF = initRes.iof + monthlyIOF;
             const totalIR = initRes.ir + monthlyIR;
             const totalTax = totalIOF + totalIR;
+            
             const totalNet = totalGross - totalTax;
             const netProfit = totalNet - totalInvested;
+            
+            const diferencaPoupanca = totalNet - totalPoupGross;
 
-            // UI Update - Header
-            document.getElementById('headerResult').innerText = formatBRL(totalNet);
+            // UI Update - Animation on Main Header
+            const elHeaderResult = document.getElementById('headerResult');
+            // Animated final net value
+            animateValue('headerResult', totalInvested, totalNet, 1000); 
             document.getElementById('headerProfit').innerText = `+ ${formatBRL(netProfit)} de lucro real`;
 
-            // UI Update - Details
+            // Setup Share Data
+            globalShareData = {
+                title: 'Meu Simulação CDB',
+                text: `Simulei um CDB rendendo ${cdbPercent}% do CDI.\nInvesti: ${formatBRL(totalInvested)}\nVou resgatar líquido: ${formatBRL(totalNet)}\n\nCalculado no App CDB!`,
+            };
+            
+            // Show Share Button
+            if (navigator.share) {
+                const btnShare = document.getElementById('btnShare');
+                btnShare.classList.remove('hidden');
+                setTimeout(() => btnShare.classList.remove('opacity-0'), 100);
+            }
+
+            // UI Update - Show Details Sheet
             document.getElementById('detailsSection').classList.add('active');
             
             document.getElementById('detTotalInvested').innerText = formatBRL(totalInvested);
-            document.getElementById('detTotalGross').innerText = formatBRL(totalGross);
+            document.getElementById('detGrossProfit').innerText = `+ ${formatBRL(totalGrossProfit)}`;
+            
             document.getElementById('detTotalIOF').innerText = `- ${formatBRL(totalIOF)}`;
             document.getElementById('detTotalTax').innerText = `- ${formatBRL(totalIR)}`;
+            
             document.getElementById('detNetProfit').innerText = `+ ${formatBRL(netProfit)}`; 
             document.getElementById('detTotalNet').innerText = formatBRL(totalNet);
 
-            // Average Calculations
-            const totalDaysCount = initBD.totalDays; 
-            const dailyAvg = totalDaysCount > 0 ? netProfit / totalDaysCount : 0;
-            const monthlyAvg = totalDaysCount > 0 ? netProfit / (totalDaysCount / 30) : 0;
+            // Poupança Banner
+            const banner = document.getElementById('poupancaBanner');
+            if(diferencaPoupanca > 0) {
+                banner.classList.remove('hidden');
+                document.getElementById('poupancaDiff').innerText = formatBRL(diferencaPoupanca);
+            } else {
+                banner.classList.add('hidden'); // Ex: se retirar em menos de 30 dias, o IOF/IR do CDB pode fazê-lo render menos que poupança
+            }
 
-            document.getElementById('detDailyAvg').innerText = formatBRL(dailyAvg);
-            document.getElementById('detMonthlyAvg').innerText = formatBRL(monthlyAvg);
-            
+            // Tax Rate Info
             const taxRate = getTaxRate(initBD.totalDays);
-            document.getElementById('detTaxRate').innerText = (monthlyVal > 0 && taxRate !== 22.5) ? "Regressivo" : `${taxRate}%`;
+            document.getElementById('detTaxRate').innerText = (monthlyVal > 0 && taxRate !== 22.5) ? "Misto" : `${taxRate}%`;
 
             // Calendar
             document.getElementById('calBusiness').innerText = initBD.businessDays;
@@ -590,11 +722,22 @@
 
             updateChart(totalInvested, netProfit, totalTax, totalIOF);
             
-            // Auto scroll no mobile para ver o resultado
+            // Auto scroll on Mobile
             if (window.innerWidth < 1024) {
                 setTimeout(() => {
                     document.getElementById('detailsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }, 100);
+                }, 300);
+            }
+        }
+
+        // Web Share API
+        async function shareResult() {
+            if (navigator.share && globalShareData) {
+                try {
+                    await navigator.share(globalShareData);
+                } catch (err) {
+                    console.log('Partilha cancelada ou falhou', err);
+                }
             }
         }
 
@@ -605,18 +748,22 @@
             resultChart = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Investido', 'Lucro Líquido', 'Impostos (IR + IOF)'],
+                    labels: ['Capital Investido', 'Lucro Líquido', 'Impostos Retidos'],
                     datasets: [{
                         data: [inv, profit, taxTotal],
                         backgroundColor: ['#E2E8F0', '#10B981', '#EF4444'],
-                        borderWidth: 0
+                        borderWidth: 0,
+                        hoverOffset: 4
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { position: 'right', labels: { boxWidth: 10 } } },
-                    cutout: '75%'
+                    plugins: { 
+                        legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8, font: {size: 11} } } 
+                    },
+                    cutout: '70%',
+                    animation: { animateScale: true, animateRotate: true }
                 }
             });
         }
