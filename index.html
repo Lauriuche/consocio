@@ -4,6 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel Principal - Magic Navigation</title>
+    
+    <!-- Configurações PWA e Integração do Manifesto -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#209cff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MagicMenu">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
     <!-- Google Fonts para tipografia limpa e moderna -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
@@ -41,7 +50,7 @@
             border: none;
             outline: none;
             background: #1d212b;
-            transition: opacity 0.3s ease;
+            /* Carregamento instantâneo sem atrasos visuais */
         }
 
         /* --- DOCK DE NAVEGAÇÃO INFERIOR COMPLETO (NAS BORDAS) --- */
@@ -136,15 +145,7 @@
             z-index: 10;
         }
 
-        /* --- POSICIONAMENTO DINÂMICO BASEADO EM PERCENTAGEM ---
-           Como o menu é fluido e tem 5 itens (cada um com 20% de largura):
-           - Item 1 está centrado a 10% da largura total
-           - Item 2 está centrado a 30% da largura total
-           - Item 3 está centrado a 50% da largura total
-           - Item 4 está centrado a 70% da largura total
-           - Item 5 está centrado a 90% da largura total
-           Subtraímos 35px correspondentes a metade do diâmetro do indicador (70px) para centralização perfeita.
-        */
+        /* --- POSICIONAMENTO DINÂMICO BASEADO EM PERCENTAGEM --- */
         .navigation ul li:nth-child(1).active ~ .indicator { left: calc(10% - 35px); }
         .navigation ul li:nth-child(2).active ~ .indicator { left: calc(30% - 35px); }
         .navigation ul li:nth-child(3).active ~ .indicator { left: calc(50% - 35px); }
@@ -157,14 +158,14 @@
     <!-- 1. ÁREA CENTRAL DE CONTEÚDO (Páginas do seu site) -->
     <div class="content-wrapper">
         <!-- 
-          O iframe carrega as suas páginas externas localizadas na mesma pasta (raiz).
-          Crie os ficheiros reais: home.html, profile.html, chat.html, camera.html, settings.html.
+          O iframe agora aponta diretamente para "home.html" por padrão,
+          fazendo com que a primeira página carregue automaticamente ao iniciar.
         -->
         <iframe 
             name="content-frame" 
             id="mainFrame"
             class="main-frame" 
-            srcdoc="<!DOCTYPE html><html><head><style>body{background:#1d212b;color:#fff;font-family:sans-serif;display:flex;flex-direction:column;justify-content:center;align-items:center;height:90vh;margin:0;text-align:center;}h1{font-size:28px;color:#209cff;margin-bottom:8px;}p{font-size:15px;color:#64748b;max-width:320px;line-height:1.6;}span{background:#209cff;color:#fff;padding:2px 8px;border-radius:4px;font-size:12px;font-family:monospace;}</style></head><body><h1>Index Carregado!</h1><p>O menu agora estende-se perfeitamente até às bordas esquerda, direita e inferior do ecrã.<br><br>Crie o ficheiro <span>home.html</span> na sua pasta de trabalho para ver o seu conteúdo aqui.</p></body></html>">
+            src="home.html">
         </iframe>
     </div>
 
@@ -173,16 +174,16 @@
         <div class="navigation">
             <ul>
                 <!-- Link 1: Início -->
-                <li class="list active" data-url="cdb.html">
-                    <a href="cdb.html" target="content-frame">
+                <li class="list active" data-url="home.html">
+                    <a href="home.html" target="content-frame">
                         <span class="icon">
                             <ion-icon name="home-outline"></ion-icon>
                         </span>
                     </a>
                 </li>
                 <!-- Link 2: Perfil -->
-                <li class="list" data-url="consocio.html">
-                    <a href="consocio.html" target="content-frame">
+                <li class="list" data-url="profile.html">
+                    <a href="profile.html" target="content-frame">
                         <span class="icon">
                             <ion-icon name="person-outline"></ion-icon>
                         </span>
@@ -222,33 +223,39 @@
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 
-    <!-- Script de Animação e Sincronização de Páginas -->
+    <!-- Script de Animação, Sincronização de Páginas e Registo do PWA -->
     <script>
         const listItems = document.querySelectorAll('.list');
         const frame = document.getElementById('mainFrame');
 
+        // 1. GESTÃO DOS CLIQUES NO MENU (Instantâneo)
         function handleMenuNavigation(e) {
-            // Remove a classe "active" de todos os botões do menu
             listItems.forEach((item) => item.classList.remove('active'));
-            // Aplica a classe "active" ao item clicado para deslizar o indicador
             this.classList.add('active');
-
-            // Adiciona efeito suave de transição de opacidade ao carregar uma nova página
-            if (frame) {
-                frame.style.opacity = '0.4';
-            }
         }
 
-        // Associa os eventos de clique e toque nos dispositivos móveis
         listItems.forEach((item) => {
             item.addEventListener('click', handleMenuNavigation);
             item.addEventListener('touchstart', handleMenuNavigation, { passive: true });
         });
 
-        // Repõe a opacidade total quando a página termina de carregar no iframe
-        frame.addEventListener('load', () => {
-            frame.style.opacity = '1';
-        });
+        // 2. REGISTO DO SERVICE WORKER SEGURO
+        // Validamos se o navegador suporta e se o site corre num protocolo válido (http/https) para evitar erros em blob/sandbox
+        const isSupportedProtocol = window.location.protocol === 'http:' || window.location.protocol === 'https:';
+        
+        if ('serviceWorker' in navigator && isSupportedProtocol) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then((registration) => {
+                        console.log('Service Worker registado com sucesso sob o escopo: ', registration.scope);
+                    })
+                    .catch((error) => {
+                        console.error('Falha ao registar o Service Worker: ', error);
+                    });
+            });
+        } else {
+            console.log('Registo do Service Worker ignorado (Ambiente local de desenvolvimento ou protocolo não suportado).');
+        }
     </script>
 </body>
 </html>
